@@ -1,0 +1,5 @@
+user = {{ MARIADB_USER }}
+password = {{ MARIADB_PASS }}
+hosts = localhost
+dbname = postfix
+query = SELECT quota FROM mailbox WHERE username='%s' AND active = '1'

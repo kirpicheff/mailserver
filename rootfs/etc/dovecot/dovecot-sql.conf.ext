@@ -1,0 +1,32 @@
+connect = host=localhost dbname=postfix user={{ MARIADB_USER }} password={{ MARIADB_PASS }}
+driver = mysql
+
+# Default password scheme.
+# depends on your $CONF['encrypt'] setting:
+# md5crypt  -> MD5-CRYPT
+# md5       -> PLAIN-MD5
+# cleartext -> PLAIN
+default_pass_scheme = MD5-CRYPT
+
+# Query to retrieve password. user can be used to retrieve username in other
+# formats also.
+
+#password_query = SELECT username AS user,password FROM mailbox WHERE username = '%u' AND active='1'
+
+iterate_query = SELECT username as user FROM mailbox
+
+password_query = \
+SELECT username as user, password, '/data/mail/%d/%n' as userdb_home, \
+'maildir:/data/mail/%d/%n' as userdb_mail, 1000 as userdb_uid, 1000 as userdb_gid \
+FROM mailbox WHERE username = '%u' AND active = '1'
+
+
+# Query to retrieve user information.
+
+# user_query = SELECT maildir, 1000 AS uid, 1000 AS gid FROM mailbox WHERE username = '%u' AND active='1'
+
+user_query = \
+SELECT '/data/mail/%d/%n' as home, \
+'maildir:/data/mail/%d/%n' as mail, \
+1000 AS uid, 1000 AS gid, concat('*:bytes=', quota) AS quota_rule \
+FROM mailbox WHERE username = '%u' AND active = '1'

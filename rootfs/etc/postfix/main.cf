@@ -1,0 +1,144 @@
+compatibility_level = 2
+
+queue_directory = /var/spool/postfix
+
+command_directory = /usr/sbin
+
+daemon_directory = /usr/libexec/postfix
+
+data_directory = /var/lib/postfix
+
+mail_owner = postfix
+
+unknown_local_recipient_reject_code = 550
+
+debug_peer_level = 2
+
+debugger_command =
+	 PATH=/bin:/usr/bin:/usr/local/bin:/usr/X11R6/bin
+	 ddd $daemon_directory/$process_name $process_id & sleep 5
+
+sendmail_path = /usr/sbin/sendmail
+
+newaliases_path = /usr/bin/newaliases
+
+mailq_path = /usr/bin/mailq
+
+setgid_group = postdrop
+
+html_directory = no
+
+manpage_directory = /usr/share/man
+
+sample_directory = /etc/postfix
+
+readme_directory = /usr/share/doc/postfix/readme
+inet_protocols = ipv4
+meta_directory = /etc/postfix
+shlib_directory = /usr/lib/postfix
+
+smtputf8_enable = no
+myhostname = mail.example.com
+myorigin = $mydomain
+mydestination = localhost.$mydomain, localhost
+mynetworks = 127.0.0.0/8
+
+# Шифрование исходящих
+
+smtp_tls_loglevel            = 1
+smtp_tls_security_level      = may
+smtp_dns_support_level       = dnssec
+smtp_tls_CAfile              = /data/cert/chain.pem
+smtp_tls_protocols           = !TLSv1, !SSLv2, !SSLv3
+smtp_tls_mandatory_protocols = !TLSv1, !SSLv2, !SSLv3
+smtp_tls_mandatory_ciphers   = medium
+smtp_tls_note_starttls_offer = yes
+
+# Шифрование входящих писем
+
+smtpd_tls_cert_file = /data/cert/mail.crt
+smtpd_tls_key_file = /data/cert/mail.key
+smtpd_tls_CAfile = /data/cert/chain.pem
+smtpd_tls_security_level = may
+
+# Корневые сертификаты
+smtp_tls_CApath = /etc/ssl/certs
+smtpd_tls_CApath = /etc/ssl/certs
+
+
+# postfix smtp auth
+
+smtpd_sasl_type = dovecot
+smtpd_sasl_path = private/auth
+smtpd_sasl_auth_enable = yes
+
+
+
+# Очереди
+queue_run_delay = 5m
+minimal_backoff_time = 10m
+maximal_backoff_time = 15m
+maximal_queue_lifetime = 3d
+
+virtual_mailbox_domains = proxy:mysql:/etc/postfix/sql/mysql_virtual_domains_maps.cf
+virtual_alias_maps =
+   proxy:mysql:/etc/postfix/sql/mysql_virtual_alias_maps.cf,
+   proxy:mysql:/etc/postfix/sql/mysql_virtual_alias_domain_maps.cf,
+   proxy:mysql:/etc/postfix/sql/mysql_virtual_alias_domain_catchall_maps.cf
+
+virtual_mailbox_maps =
+   proxy:mysql:/etc/postfix/sql/mysql_virtual_mailbox_maps.cf,
+   proxy:mysql:/etc/postfix/sql/mysql_virtual_alias_domain_mailbox_maps.cf
+
+virtual_uid_maps = static:1000
+virtual_gid_maps = static:1000
+virtual_mailbox_base = /data/mail
+
+milter_default_action = accept
+milter_protocol = 6
+smtpd_milters = inet:localhost:11332
+non_smtpd_milters = inet:localhost:11332
+milter_mail_macros = i {mail_addr} {client_addr} {client_name} {auth_authen}
+virtual_transport = lmtp:unix:private/dovecot-lmtp
+
+# antispam
+smtpd_delay_reject = yes
+smtpd_helo_required = yes
+smtp_host_lookup = native
+
+smtpd_relay_restrictions =
+	permit_mynetworks,
+	permit_sasl_authenticated,
+	reject_unauth_destination
+
+smtpd_helo_restrictions =
+        reject_invalid_hostname,
+        permit_mynetworks,
+        permit_sasl_authenticated,
+        reject_invalid_helo_hostname,
+        reject_non_fqdn_helo_hostname,
+#       reject_unknown_helo_hostname,
+#       reject_unknown_hostname,
+        permit
+
+
+smtpd_recipient_restrictions =
+        reject_non_fqdn_recipient,
+        reject_unknown_recipient_domain,
+        permit_sasl_authenticated,
+        permit_mynetworks,
+	check_recipient_access regexp:/etc/postfix/restrict.all.alias,
+        reject_unauth_pipelining,
+        reject_unauth_destination,
+        permit
+
+smtpd_etrn_restrictions = reject
+smtpd_helo_required = yes
+
+
+smtpd_data_restrictions =
+    permit_mynetworks,
+    reject_unauth_pipelining,
+    reject_multi_recipient_bounce,
+    permit
+

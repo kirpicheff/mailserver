@@ -1,0 +1,5 @@
+user = {{ MARIADB_USER }}
+password = {{ MARIADB_PASS }}
+hosts = localhost
+dbname = postfix
+query  = SELECT maildir FROM mailbox WHERE username='%s' AND active = '1'
