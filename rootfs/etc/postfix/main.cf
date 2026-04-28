@@ -79,6 +79,7 @@ queue_run_delay = 5m
 minimal_backoff_time = 10m
 maximal_backoff_time = 15m
 maximal_queue_lifetime = 3d
+bounce_queue_lifetime = 3d
 
 virtual_mailbox_domains = proxy:mysql:/etc/postfix/sql/mysql_virtual_domains_maps.cf
 virtual_alias_maps =

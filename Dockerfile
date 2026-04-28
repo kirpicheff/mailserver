@@ -98,6 +98,7 @@ COPY rootfs /
 
 
 RUN	chmod +x -R /scripts && \
+	chmod +x -R /opt/mailadmin && \
 	ln -sf /usr/share/zoneinfo/Europe/Moscow /etc/localtime && \
 	mkdir -p /var/log/supervisor && \
 	mkdir -p /run/nginx && \

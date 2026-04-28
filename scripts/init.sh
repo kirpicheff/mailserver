@@ -193,6 +193,8 @@ settpl /etc/postfix/sql/mysql_virtual_domains_maps.cf
 settpl /etc/postfix/sql/mysql_virtual_mailbox_limit_maps.cf
 settpl /etc/postfix/sql/mysql_virtual_mailbox_maps.cf
 settpl /etc/postfixadmin/config.inc.php
+# Генерация конфига для MailAdmin
+settpl /opt/mailadmin/.env
 settpl /etc/nginx/conf.d/0-autoconfig.conf
 settpl /etc/nginx/conf.d/2-postfixadmin.conf
 settpl /etc/nginx/conf.d/3-snappymail.conf
@@ -307,6 +309,9 @@ PASS_HASH=$(php -r "echo crypt('${SETUP_PASSWORD}', '\$1\$' . substr(md5(uniqid(
 echo "admin:$PASS_HASH" > /etc/nginx/.htpasswd
 chmod 644 /etc/nginx/.htpasswd
 chown postfix:postfix /etc/dovecot/quota*
+
+# Права на исполнение для MailAdmin
+chmod +x /opt/mailadmin/mailadmin
 
 echo "Setting done. Welcome."
 echo "Tuning TCP keepalive..."

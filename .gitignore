@@ -21,3 +21,10 @@ logs/
 *.crt
 *.key
 *.csr
+
+# Интеграция MailAdmin (собирается через скрипт)
+/mailadmin/
+/update-and-build.sh
+/rootfs/opt/mailadmin/mailadmin
+/rootfs/var/www/mailadmin/
+
