@@ -113,7 +113,6 @@ smtpd_relay_restrictions =
 	reject_unauth_destination
 
 smtpd_helo_restrictions =
-        reject_invalid_hostname,
         permit_mynetworks,
         permit_sasl_authenticated,
         reject_invalid_helo_hostname,

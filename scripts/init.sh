@@ -1,4 +1,22 @@
 #!/bin/sh
+# Ожидание подключения к сети
+echo "Ожидание подключения к сети..."
+NETWORK_UP=0
+for i in $(seq 1 60); do
+  if ping -c 1 -W 2 8.8.8.8 >/dev/null 2>&1; then
+    NETWORK_UP=1
+    break
+  fi
+  echo "Сеть недоступна, ожидание... ($i/60)"
+  sleep 1
+done
+
+if [ $NETWORK_UP -eq 0 ]; then
+  echo "Предупреждение: Сеть не появилась через 30 секунд. Продолжаем запуск..."
+else
+  echo "Сеть активна."
+fi
+
 
 if [ -z ${MAIL_SERVER} ]; then export MAIL_SERVER=mail.example.com; fi
 if [ -z ${MAIN_DOMAIN} ]; then export MAIN_DOMAIN=example.com; fi
@@ -49,12 +67,7 @@ chown -R nginx:nginx /var/www/roundcube
 [ -d /data/roundcube ] && chown -R nginx:nginx /data/roundcube
 
 cat <<EOF > /data/sieve/default.sieve
- require ["fileinto"];
-# Move spam to spam folder
-if header :contains "X-Spam-Status" ["YES"] {
-  fileinto "Junk";
-  stop;
-}
+# Global default sieve script
 EOF
 
 
@@ -272,7 +285,6 @@ sed -i "s/skip-networking/#skip-networking/"  /etc/my.cnf.d/mariadb-server.cnf
 
 chown -R nginx:nginx /var/www/snappy
 chown -R nginx:nginx /var/www/roundcube
-chown -R nginx:nginx /var/www/status
 mkdir -p /var/lib/php82/sessions
 chown -R nginx:nginx /var/lib/php82/sessions
 chmod 777 /var/lib/php82/sessions
@@ -304,10 +316,6 @@ if [ -f "$APP_CONFIG" ]; then
     sed -i '/^admin_totp =/d' "$APP_CONFIG"
 fi
 
-# Генерация пароля для статус-панели (логин admin)
-PASS_HASH=$(php -r "echo crypt('${SETUP_PASSWORD}', '\$1\$' . substr(md5(uniqid()), 0, 8) . '\$');")
-echo "admin:$PASS_HASH" > /etc/nginx/.htpasswd
-chmod 644 /etc/nginx/.htpasswd
 chown postfix:postfix /etc/dovecot/quota*
 
 # Права на исполнение для MailAdmin
