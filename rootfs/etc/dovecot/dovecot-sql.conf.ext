@@ -18,8 +18,8 @@ iterate_query = SELECT username as user FROM mailbox
 password_query = \
 SELECT username as user, \
   CASE \
-    WHEN password LIKE '$6$%' THEN CONCAT('{SHA512-CRYPT}', password) \
-    WHEN password LIKE '$1$%' THEN CONCAT('{MD5-CRYPT}', password) \
+    WHEN password LIKE '$6$%%' THEN CONCAT('{SHA512-CRYPT}', password) \
+    WHEN password LIKE '$1$%%' THEN CONCAT('{MD5-CRYPT}', password) \
     ELSE password \
   END AS password, \
   '/data/mail/%d/%n' as userdb_home, \
@@ -27,6 +27,7 @@ SELECT username as user, \
   1000 as userdb_uid, \
   1000 as userdb_gid \
   FROM mailbox WHERE username = '%u' AND active = '1'
+
 
 
 # Query to retrieve user information.
