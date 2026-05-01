@@ -1,5 +1,7 @@
 sysctl vm.overcommit_memory=1
 docker run -it \
+	--privileged \
+    --cap-add=NET_ADMIN \
 	--sysctl net.core.somaxconn=512	\
 	-v /root/docker/mailserver/tmp:/data \
 	-v /root/docker/mailserver/tmp/cert:/etc/letsencrypt \
@@ -11,6 +13,7 @@ docker run -it \
 	-e MAIL_SERVER=mail.aalabin.ru \
 	-e EMAIL=postmaster@aalabin.ru \
 	-e RSPAMD_PASSWORD=htvbrc \
+#	 -e MAILADMIN_RAM_TOTAL=6144 \
 	-p 587:587 \
 	-p 465:465 \
 	-p 993:993 \

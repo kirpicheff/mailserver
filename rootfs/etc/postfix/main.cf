@@ -75,11 +75,11 @@ smtpd_sasl_auth_enable = yes
 
 
 # Очереди
-queue_run_delay = 5m
-minimal_backoff_time = 10m
-maximal_backoff_time = 15m
-maximal_queue_lifetime = 3d
-bounce_queue_lifetime = 3d
+queue_run_delay = 300s
+minimal_backoff_time = 300s
+maximal_backoff_time = 1800s
+maximal_queue_lifetime = 5d
+bounce_queue_lifetime = 1d
 
 virtual_mailbox_domains = proxy:mysql:/etc/postfix/sql/mysql_virtual_domains_maps.cf
 virtual_alias_maps =
@@ -141,4 +141,12 @@ smtpd_data_restrictions =
     reject_unauth_pipelining,
     reject_multi_recipient_bounce,
     permit
+
+# Таймауты для устойчивости к сетевым сбоям
+smtpd_timeout = 60
+smtp_connect_timeout = 30
+smtp_helo_timeout = 60
+
+# Лимиты
+message_size_limit = 104857600
 
