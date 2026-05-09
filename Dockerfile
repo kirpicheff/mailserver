@@ -2,6 +2,8 @@ FROM alpine:3.19
 
 RUN mkdir -p /data && mkdir -p /var/www && [ -e /var/www/z-push ] || mkdir -p /var/www/z-push && \
 	adduser -h /data/vmail -s /sbin/nologin -D -u 1000 vmail && \
+	adduser -D -S -s /sbin/nologin -G mail mailadmin && \
+	(addgroup adm || addgroup -S adm) && addgroup mailadmin adm || true && \
 	apk update && apk add --no-cache \
 	rsyslog \
 	opendkim \

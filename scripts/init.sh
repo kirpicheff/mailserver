@@ -53,10 +53,19 @@ then
 [ -d /data/mysql ] || mkdir /data/mysql
 [ -d /data/fail2ban ] || mkdir /data/fail2ban
 
+# Директория для сокета MailAdmin
+if [ ! -d /var/run/mailadmin ]; then
+    mkdir -p /var/run/mailadmin
+    chown root:mail /var/run/mailadmin
+    chmod 770 /var/run/mailadmin
+fi
+
 chown mysql:mysql /run/mysqld
 chown root:root /data
-chown -R mysql.mysql /data/mysql
+chown -R mysql:mysql /data/mysql
 chown -R vmail:vmail /data/mail
+chown -R postfix:postfix /var/lib/postfix
+chown -R postfix:postfix /etc/postfix
 chown -R opendkim:mail /etc/opendkim
 chown -R rspamd:rspamd /data/rspamd
 chown -R rspamd:rspamd /etc/rspamd
@@ -143,6 +152,7 @@ EOF
 
 
 chown -R rspamd:rspamd /data/rspamd
+chown -R mysql:mysql /data/mysql
 chown -R vmail:vmail /data/sieve/
 
 
@@ -187,6 +197,40 @@ echo "Initializing done. Setting..."
 
 [ -d /var/log/supervisor ] || mkdir /var/log/supervisor
 [ -d /var/log/nginx ] || mkdir /var/log/nginx
+
+# Принудительное исправление прав (на случай ручных изменений)
+echo "Восстановление прав доступа..."
+chown mysql:mysql /run/mysqld
+chown -R mysql:mysql /data/mysql
+chown -R vmail:vmail /data/mail
+chown -R postfix:postfix /var/lib/postfix
+chown -R postfix:postfix /etc/postfix
+chown -R opendkim:mail /etc/opendkim
+chown -R rspamd:rspamd /data/rspamd /etc/rspamd
+chown -R nginx:nginx /var/www/snappy /var/www/roundcube
+[ -d /data/snappy ] && chown -R nginx:nginx /data/snappy
+[ -d /data/roundcube ] && chown -R nginx:nginx /data/roundcube
+
+# Исправление прав на очереди Postfix (штатная утилита)
+postfix set-permissions 2>/dev/null || true
+# Удаление stale lock-файла
+rm -f /var/lib/postfix/master.lock
+
+# Доступ для MailAdmin (группа mail) к сертификатам и конфигам
+echo "Настройка доступа для MailAdmin..."
+chown -R root:mail /data/cert /etc/fail2ban /data/fail2ban
+chmod -R 750 /data/cert /etc/fail2ban /data/fail2ban
+
+# Разрешаем MailAdmin читать конфиги почтовых служб
+chown root:mail /etc/postfix /etc/dovecot
+chmod 750 /etc/postfix /etc/dovecot
+find /etc/postfix /etc/dovecot -type f -exec chown root:mail {} +
+find /etc/postfix /etc/dovecot -type f -exec chmod 640 {} +
+
+# Настройка прав на логи для группы mail (чтобы MailAdmin мог их читать)
+touch /var/log/mail.log /var/log/messages /var/log/fail2ban.log
+chown root:mail /var/log/mail.log /var/log/messages /var/log/fail2ban.log
+chmod 640 /var/log/mail.log /var/log/messages /var/log/fail2ban.log
 
 settpl() {
 mv "$1" "$1.tpl" # envtpl requires files to have .tpl extension
@@ -318,8 +362,12 @@ fi
 
 chown postfix:postfix /etc/dovecot/quota*
 
-# Права на исполнение для MailAdmin
+# Настройка прав для MailAdmin
+addgroup mailadmin dovecot || true
+chown root:root /opt/mailadmin/mailadmin
 chmod +x /opt/mailadmin/mailadmin
+chown mailadmin:mail /opt/mailadmin/.env
+chmod 600 /opt/mailadmin/.env
 
 echo "Setting done. Welcome."
 echo "Tuning TCP keepalive..."
