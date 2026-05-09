@@ -16,7 +16,22 @@ Comprehensive, lightweight, and high-performance mail server based on **Alpine L
 *   **Performance**: Optimized TCP stack and lightweight Alpine footprint.
 *   **Auto-SSL**: Built-in Let's Encrypt support via Certbot.
 
+## 📸 Screenshots
+
+````carousel
+![Dashboard](screenshots/dashboard.png)
+<!-- slide -->
+![Mail Domains](screenshots/domains.png)
+<!-- slide -->
+![Mailboxes](screenshots/mailboxes.png)
+<!-- slide -->
+![Admin Tools](screenshots/tools.png)
+<!-- slide -->
+![Audit Log](screenshots/audit.png)
+````
+
 ## 🛠 Quick Start
+
 
 > [!IMPORTANT]
 > This repository does not include the `mailadmin` binary. You must download the latest release from the [MailAdmin repository](https://github.com/kirpicheff/mailadmin) and place it in `rootfs/opt/mailadmin/mailadmin` before building the Docker image.
@@ -97,7 +112,18 @@ docker rm mailserver
 > [!NOTE]
 > If you are using the source repository, you can use the included `update.sh` (for regular updates) or `upgrade.sh` (for database migrations) helper scripts.
 
+## 🛡 Security
+
+> [!WARNING]
+> Never commit real passwords, domains, or IP addresses to this repository. All sensitive data should be passed via environment variables or handled outside of version control.
+
+If you have accidentally committed sensitive data, please follow these steps:
+1. Change all compromised passwords and keys immediately.
+2. Use tools like `git filter-repo` or [BFG Repo-Cleaner](https://rtyley.github.io/bfg-repo-cleaner/) to remove sensitive data from your git history.
+3. Update your local and remote repositories.
+
 ## 📜 License
+
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 

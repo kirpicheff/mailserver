@@ -7,9 +7,10 @@ docker run -d \
 	-e MARIADB_USER=postfix \
 	-e MARIADB_PASS=password \
 	-e SETUP_PASSWORD=admin \
-	-e MAIN_DOMAIN=mygtw.ml \
-	-e MAIL_SERVER=mail.mygtw.ml \
-	-e EMAIL=admin@mygtw.ml \
+	-e MAIN_DOMAIN=example.com \
+	-e MAIL_SERVER=mail.example.com \
+	-e EMAIL=admin@example.com \
+
 	-e MESSAGE_SIZE=15728640 \
 	-e UPLOAD_SIZE=25M \
 	-e POST_SIZE=25M \
@@ -21,5 +22,6 @@ docker run -d \
 	-p 4190:4190 \
 	-p 80:80 \
 	-p 443:443 \
-	-h mail.mygtw.ml kirpich/mailserver
+	-h mail.example.com kirpich/mailserver
+
 

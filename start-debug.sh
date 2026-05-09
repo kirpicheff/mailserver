@@ -8,11 +8,11 @@ docker run -it \
 	-v /root/docker/mailserver/tmp/rainloop:/var/www/rainloop/data \
 	-e MARIADB_USER=postfix \
 	-e MARIADB_PASS=password \
-	-e SETUP_PASSWORD=htrbrc1 \
-	-e MAIN_DOMAIN=aalabin.ru \
-	-e MAIL_SERVER=mail.aalabin.ru \
-	-e EMAIL=postmaster@aalabin.ru \
-	-e RSPAMD_PASSWORD=htvbrc \
+	-e SETUP_PASSWORD=admin \
+	-e MAIN_DOMAIN=example.com \
+	-e MAIL_SERVER=mail.example.com \
+	-e EMAIL=postmaster@example.com \
+	-e RSPAMD_PASSWORD=password \
 #	 -e MAILADMIN_RAM_TOTAL=6144 \
 	-p 587:587 \
 	-p 465:465 \
@@ -22,4 +22,5 @@ docker run -it \
 	-p 9999:9999 \
 	-p 8081:80 \
 	-p 443:443 \
-	-h mail.aalabin.ru kirpich/mailserver
+	-h mail.example.com kirpich/mailserver
+
