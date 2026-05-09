@@ -47,6 +47,7 @@ while true; do
     echo "5) Ресурсы (Stats)"
     echo "6) Перезапустить контейнер"
     echo "q) Выход"
+
     read -p "Ваш выбор: " choice
 
     case $choice in
@@ -60,5 +61,7 @@ while true; do
         *) echo "Неверный выбор" ;;
     esac
 done
+
+
 
 
