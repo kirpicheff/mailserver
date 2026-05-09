@@ -199,12 +199,22 @@ echo "Initializing done. Setting..."
 [ -d /var/log/nginx ] || mkdir /var/log/nginx
 
 # Принудительное исправление прав (на случай ручных изменений)
-echo "Восстановление прав доступа..."
+echo "Проверка прав доступа..."
 chown mysql:mysql /run/mysqld
-chown -R mysql:mysql /data/mysql
-chown -R vmail:vmail /data/mail
+chmod 755 /run/mysqld
+
+# Тяжелые директории проверяем перед рекурсивным chown
+if [ "$(stat -c '%U' /data/mysql)" != "mysql" ]; then
+    echo "Восстановление прав на MySQL..."
+    chown -R mysql:mysql /data/mysql
+fi
+
+if [ "$(stat -c '%U' /data/mail)" != "vmail" ]; then
+    echo "Восстановление прав на почту (большой объем, может занять время)..."
+    chown -R vmail:vmail /data/mail
+fi
+
 chown -R postfix:postfix /var/lib/postfix
-chown -R postfix:postfix /etc/postfix
 chown -R opendkim:mail /etc/opendkim
 chown -R rspamd:rspamd /data/rspamd /etc/rspamd
 chown -R nginx:nginx /var/www/snappy /var/www/roundcube
@@ -216,16 +226,32 @@ postfix set-permissions 2>/dev/null || true
 # Удаление stale lock-файла
 rm -f /var/lib/postfix/master.lock
 
-# Доступ для MailAdmin (группа mail) к сертификатам и конфигам
-echo "Настройка доступа для MailAdmin..."
+# Доступ для MailAdmin к сертификатам и конфигам
+echo "Настройка доступа для MailAdmin и сервисов..."
+addgroup mailadmin dovecot || true
+addgroup mailadmin postfix || true
+
 chown -R root:mail /data/cert /etc/fail2ban /data/fail2ban
 chmod -R 750 /data/cert /etc/fail2ban /data/fail2ban
 
-# Разрешаем MailAdmin читать конфиги почтовых служб
-chown root:mail /etc/postfix /etc/dovecot
-chmod 750 /etc/postfix /etc/dovecot
-find /etc/postfix /etc/dovecot -type f -exec chown root:mail {} +
-find /etc/postfix /etc/dovecot -type f -exec chmod 640 {} +
+# Разрешаем MailAdmin читать конфиги почтовых служб через соответствующие группы
+# Исправляем и папки, и файлы рекурсивно
+find /etc/dovecot -exec chown root:dovecot {} +
+find /etc/dovecot -type d -exec chmod 750 {} +
+find /etc/dovecot -type f -exec chmod 640 {} +
+
+find /etc/postfix -exec chown root:postfix {} +
+find /etc/postfix -type d -exec chmod 750 {} +
+find /etc/postfix -type f -exec chmod 640 {} +
+
+# Права для мониторинга (сессии Dovecot, статус Fail2ban)
+echo "Настройка прав для мониторинга..."
+[ -d /var/run/dovecot ] && chmod 755 /var/run/dovecot
+if [ -d /var/run/fail2ban ]; then
+    chown root:mail /var/run/fail2ban
+    chmod 775 /var/run/fail2ban
+    [ -S /var/run/fail2ban/fail2ban.sock ] && chown root:mail /var/run/fail2ban/fail2ban.sock && chmod 660 /var/run/fail2ban/fail2ban.sock
+fi
 
 # Настройка прав на логи для группы mail (чтобы MailAdmin мог их читать)
 touch /var/log/mail.log /var/log/messages /var/log/fail2ban.log
