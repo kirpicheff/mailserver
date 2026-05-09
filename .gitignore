@@ -1,30 +1,19 @@
-# Временные файлы и логи
+# Database dumps
+*.sql
+full_dump_before_upgrade.sql
+
+# Local data / environment
+.env
 tmp/
-*.tmp
-*.log
+data/
+
+# OS files
 .DS_Store
 Thumbs.db
 
-# Данные сервера (Маппинг томов)
-# Эти папки содержат почту, БД и реальные сертификаты
-data/
-mysql/
-logs/
+# Logs
+*.log
 
-# IDE и конфигурации окружения
-.vscode/
-.idea/
-.env
-
-# Файлы сертификатов (на случай если они вне папки data)
-*.pem
-*.crt
-*.key
-*.csr
-
-# Интеграция MailAdmin (собирается через скрипт)
-/mailadmin/
-/update-and-build.sh
-/rootfs/opt/mailadmin/mailadmin
-/rootfs/var/www/mailadmin/
+# Binaries
+rootfs/opt/mailadmin/mailadmin
 

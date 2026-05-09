@@ -12,13 +12,17 @@ Comprehensive, lightweight, and high-performance mail server based on **Alpine L
 *   **Webmail Options**: Built-in **Roundcube** and **SnappyMail**.
 *   **ActiveSync**: **Z-Push** support for mobile synchronization.
 *   **Security**: Integrated **Fail2ban**, **OpenDKIM**, and **Rspamd** for spam filtering.
-*   **Admin Panel**: Custom **MailAdmin** UI for easy domain and mailbox management.
+*   **Admin Panel**: Custom [MailAdmin](https://github.com/kirpicheff/mailadmin) UI for easy domain and mailbox management.
 *   **Performance**: Optimized TCP stack and lightweight Alpine footprint.
 *   **Auto-SSL**: Built-in Let's Encrypt support via Certbot.
 
 ## 🛠 Quick Start
 
+> [!IMPORTANT]
+> This repository does not include the `mailadmin` binary. You must download the latest release from the [MailAdmin repository](https://github.com/kirpicheff/mailadmin) and place it in `rootfs/opt/mailadmin/mailadmin` before building the Docker image.
+
 To run the mail server, use the following command:
+
 
 ```bash
 docker run -d \

@@ -30,6 +30,8 @@ if [ -z ${POST_SIZE} ]; then export POST_SIZE=52428800; fi
 if [ -z ${RSPAMD_PASSWORD} ]; then export RSPAMD_PASSWORD='PassWord'; fi
 if [ -z ${DEFAULT_WEBMAIL} ]; then export DEFAULT_WEBMAIL=snappy; fi
 if [ -z ${ROUNDCUBE_DB_PASS} ]; then export ROUNDCUBE_DB_PASS=${MARIADB_PASS}; fi
+if [ -z ${JWT_SECRET} ]; then export JWT_SECRET=$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32); fi
+
 
 
 CERTFILE=/data/cert/live/${MAIL_SERVER}/cert.pem
