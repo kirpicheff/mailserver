@@ -35,11 +35,34 @@ docker run -d \
     -e SETUP_PASSWORD=admin \
     -e MAIN_DOMAIN=example.com \
     -e MAIL_SERVER=mail.example.com \
-    -p 25:25 -p 80:80 -p 443:443 -p 587:587 -p 993:993 -p 4190:4190 -p 9999:9999 \
+    -p 25:25 -p 80:80 -p 443:443 -p 465:465 -p 587:587 -p 993:993 -p 4190:4190 -p 9999:9999 \
+
     kirpich/mailserver
 ```
 
+### 🔓 Ports
+| Port | Protocol | Service | Description |
+| :--- | :--- | :--- | :--- |
+| 25 | TCP | SMTP | Mail transfer between servers |
+| 80/443 | TCP | HTTP/S | Webmail and Admin UI |
+| 465 | TCP | SMTPS | Secure SMTP (Submission) |
+| 587 | TCP | STARTTLS | SMTP Submission |
+| 993 | TCP | IMAPS | Secure IMAP access |
+| 4190 | TCP | SIEVE | Remote Sieve management |
+| 9999 | TCP | ADMIN | MailAdmin custom panel |
+
+## 🌐 DNS Requirements
+
+For your mail server to work correctly and not end up in spam, you MUST configure these records in your DNS:
+
+*   **MX Record**: `example.com. IN MX 10 mail.example.com.`
+*   **A Record**: `mail.example.com. IN A <Your-IP>`
+*   **SPF (TXT)**: `v=spf1 mx a -all`
+*   **DKIM (TXT)**: Get the public key from the Admin UI or `/data/dkim/mail.txt` and add it as a TXT record for `mail._domainkey`.
+*   **DMARC (TXT)**: `_dmarc IN TXT "v=DMARC1; p=none; rua=mailto:admin@example.com"`
+
 ## ⚙️ Environment Variables
+
 
 | Variable | Description | Default |
 | :--- | :--- | :--- |
