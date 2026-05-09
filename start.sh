@@ -1,4 +1,6 @@
 docker run -d \
+	--name mailserver \
+	--restart unless-stopped \
 	-v /root/docker/mailserver/tmp:/data \
 	-v /root/docker/mailserver/tmp/cert:/etc/letsencrypt \
 	-v /root/docker/mailserver/tmp/rainloop:/var/www/rainloop/data \
@@ -20,3 +22,4 @@ docker run -d \
 	-p 80:80 \
 	-p 443:443 \
 	-h mail.mygtw.ml kirpich/mailserver
+
