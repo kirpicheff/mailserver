@@ -23,8 +23,17 @@ fi
 
 echo "Используем пользователя: $DB_USER"
 
-echo "=== [2/6] Создание дампа всех баз данных ==="
-docker exec $NAME mysqldump -u "$DB_USER" -p"$DB_PASS" --all-databases > full_dump_before_upgrade.sql
+echo "=== [2/6] Создание дампа пользовательских баз данных ==="
+# Получаем список пользовательских баз данных (исключая системные)
+DB_LIST=$(docker exec $NAME mysql -u "$DB_USER" -p"$DB_PASS" -Bse "SELECT schema_name FROM information_schema.schemata WHERE schema_name NOT IN ('mysql', 'information_schema', 'performance_schema', 'sys', 'test')" | tr -d '\r' | tr '\n' ' ')
+
+if [ -z "$DB_LIST" ]; then
+    echo "Ошибка: Не удалось получить список баз данных для резервного копирования."
+    exit 1
+fi
+
+echo "Найдено баз для дампа: $DB_LIST"
+docker exec $NAME mysqldump -u "$DB_USER" -p"$DB_PASS" --databases $DB_LIST > full_dump_before_upgrade.sql
 
 if [ $? -ne 0 ]; then
     echo "КРИТИЧЕСКАЯ ОШИБКА: Не удалось создать дамп. Миграция прервана."
