@@ -83,7 +83,7 @@ EOF
 
 
 cat <<EOF > /data/sieve/before.sieve
-require ["fileinto", "comparator-i;ascii-numeric"];
+require ["fileinto", "comparator-i;ascii-numeric", "relational"];
 
 # Перемещаем в Junk, если спам
 if anyof (
