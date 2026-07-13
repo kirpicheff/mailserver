@@ -8,9 +8,17 @@ DB_PATH="/root/docker/mailserver/tmp/mysql"
 
 echo "=== [1/6] Подготовка и получение доступов ==="
 if ! docker ps -f "name=$NAME" --format '{{.Names}}' | grep -q "^$NAME$"; then
-    echo "Ошибка: Контейнер $NAME не запущен. Для миграции нужен работающий старый контейнер."
-    exit 1
+    echo "Контейнер $NAME не запущен. Ищем запущенный контейнер по образу $IMAGE..."
+    DETECTED_NAME=$(docker ps -f "ancestor=$IMAGE" --format '{{.Names}}' | head -n 1)
+    if [ -n "$DETECTED_NAME" ]; then
+        NAME="$DETECTED_NAME"
+        echo "Найден запущенный контейнер: $NAME"
+    else
+        echo "Ошибка: Не удалось найти запущенный контейнер с образом $IMAGE."
+        exit 1
+    fi
 fi
+
 
 # Вытаскиваем переменные окружения из работающего контейнера
 DB_USER=$(docker inspect --format '{{range .Config.Env}}{{println .}}{{end}}' $NAME | grep MARIADB_USER | cut -d= -f2)
@@ -63,11 +71,32 @@ rm -f "$INIT_FLAG"
 echo "=== [5/6] Запуск новой версии (инициализация чистой БД) ==="
 sh start.sh
 
-echo "Ожидание готовности MariaDB (45 секунд)..."
-sleep 45
+# Определяем имя нового контейнера (последний запущенный из нашего образа)
+NEW_NAME=$(docker ps -f "ancestor=$IMAGE" --format '{{.Names}}' | head -n 1)
+if [ -z "$NEW_NAME" ]; then
+    # Резервный вариант на случай задержки старта
+    sleep 2
+    NEW_NAME=$(docker ps -l --format '{{.Names}}')
+fi
+echo "Новый контейнер запущен под именем: $NEW_NAME"
+
+echo "Ожидание готовности MariaDB..."
+TIMEOUT=600 # 10 минут
+ELAPSED=0
+while ! docker exec $NEW_NAME mysqladmin -u "$DB_USER" -p"$DB_PASS" ping --silent >/dev/null 2>&1; do
+    sleep 5
+    ELAPSED=$((ELAPSED + 5))
+    if [ $ELAPSED -ge $TIMEOUT ]; then
+        echo "Ошибка: Превышено время ожидания готовности MariaDB."
+        exit 1
+    fi
+    echo "Ожидаем готовности базы данных... (прошло $ELAPSED сек). Последние логи:"
+    docker logs --tail 5 $NEW_NAME
+done
+echo "MariaDB готова!"
 
 echo "=== [6/6] Восстановление данных из дампа ==="
-docker exec -i $NAME mysql -u "$DB_USER" -p"$DB_PASS" < full_dump_before_upgrade.sql
+docker exec -i $NEW_NAME mysql -u "$DB_USER" -p"$DB_PASS" < full_dump_before_upgrade.sql
 
 
 if [ $? -eq 0 ]; then
