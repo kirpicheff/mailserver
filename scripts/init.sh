@@ -216,6 +216,11 @@ if [ "$(stat -c '%U' /data/mail)" != "vmail" ]; then
     chown -R vmail:vmail /data/mail
 fi
 
+# Исправление прав на папки фильтров sieve для предотвращения ошибок Dovecot
+echo "Восстановление прав на директории sieve..."
+find /data/mail -type d -name "sieve" -exec chmod 750 {} + 2>/dev/null || true
+find /data/mail -type d -path "*/sieve/tmp" -exec chmod 750 {} + 2>/dev/null || true
+
 chown -R postfix:postfix /var/lib/postfix
 chown -R opendkim:mail /etc/opendkim
 chown -R rspamd:rspamd /data/rspamd /etc/rspamd

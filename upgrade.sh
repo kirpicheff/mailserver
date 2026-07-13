@@ -47,11 +47,15 @@ else
     echo "Предупреждение: Папка $DB_PATH не найдена, пропускаем ротацию."
 fi
 
+echo "=== [4.5/6] Сброс флага инициализации контейнера ==="
+INIT_FLAG="$(dirname "$DB_PATH")/.init_finished"
+rm -f "$INIT_FLAG"
+
 echo "=== [5/6] Запуск новой версии (инициализация чистой БД) ==="
 sh start.sh
 
-echo "Ожидание готовности MariaDB (30 секунд)..."
-sleep 30
+echo "Ожидание готовности MariaDB (45 секунд)..."
+sleep 45
 
 echo "=== [6/6] Восстановление данных из дампа ==="
 docker exec -i $NAME mysql -u "$DB_USER" -p"$DB_PASS" < full_dump_before_upgrade.sql
