@@ -217,9 +217,12 @@ if [ "$(stat -c '%U' /data/mail)" != "vmail" ]; then
 fi
 
 # Исправление прав на папки фильтров sieve для предотвращения ошибок Dovecot
-echo "Восстановление прав на директории sieve..."
-find /data/mail -maxdepth 3 -type d -name "sieve" -exec chmod 750 {} + 2>/dev/null || true
-find /data/mail -maxdepth 4 -type d -path "*/sieve/tmp" -exec chmod 750 {} + 2>/dev/null || true
+if [ ! -e /data/mail/.sieve_permissions_set ]; then
+    echo "Восстановление прав на директории sieve..."
+    find /data/mail -maxdepth 3 -type d -name "sieve" -exec chmod 750 {} + 2>/dev/null || true
+    find /data/mail -maxdepth 4 -type d -path "*/sieve/tmp" -exec chmod 750 {} + 2>/dev/null || true
+    touch /data/mail/.sieve_permissions_set
+fi
 
 chown -R postfix:postfix /var/lib/postfix
 chown -R opendkim:mail /etc/opendkim
