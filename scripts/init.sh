@@ -403,6 +403,8 @@ chown root:root /opt/mailadmin/mailadmin
 chmod +x /opt/mailadmin/mailadmin
 chown mailadmin:mail /opt/mailadmin/.env
 chmod 600 /opt/mailadmin/.env
+chmod 644 /etc/postfix/dynamicmaps.cf || true
+[ -d /etc/postfix/dynamicmaps.cf.d ] && find /etc/postfix/dynamicmaps.cf.d -type d -exec chmod 755 {} + && find /etc/postfix/dynamicmaps.cf.d -type f -exec chmod 644 {} + || true
 
 echo "Setting done. Welcome."
 echo "Tuning TCP keepalive..."
