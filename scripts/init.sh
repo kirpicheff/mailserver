@@ -218,8 +218,8 @@ fi
 
 # Исправление прав на папки фильтров sieve для предотвращения ошибок Dovecot
 echo "Восстановление прав на директории sieve..."
-find /data/mail -type d -name "sieve" -exec chmod 750 {} + 2>/dev/null || true
-find /data/mail -type d -path "*/sieve/tmp" -exec chmod 750 {} + 2>/dev/null || true
+find /data/mail -maxdepth 3 -type d -name "sieve" -exec chmod 750 {} + 2>/dev/null || true
+find /data/mail -maxdepth 4 -type d -path "*/sieve/tmp" -exec chmod 750 {} + 2>/dev/null || true
 
 chown -R postfix:postfix /var/lib/postfix
 chown -R opendkim:mail /etc/opendkim
