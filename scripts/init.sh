@@ -237,6 +237,7 @@ rm -f /var/lib/postfix/master.lock
 echo "Настройка доступа для MailAdmin и сервисов..."
 addgroup mailadmin dovecot || true
 addgroup mailadmin postfix || true
+addgroup vmail postfix || true
 
 chown -R root:mail /data/cert /etc/fail2ban /data/fail2ban
 chmod -R 750 /data/cert /etc/fail2ban /data/fail2ban
@@ -279,6 +280,7 @@ settpl /etc/postfix/sql/mysql_virtual_alias_domain_catchall_maps.cf
 settpl /etc/postfix/sql/mysql_virtual_alias_domain_mailbox_maps.cf
 settpl /etc/postfix/sql/mysql_virtual_alias_domain_maps.cf
 settpl /etc/postfix/sql/mysql_virtual_alias_maps.cf
+settpl /etc/postfix/sql/mysql_restrict_global_aliases.cf
 settpl /etc/postfix/sql/mysql_virtual_domains_maps.cf
 settpl /etc/postfix/sql/mysql_virtual_mailbox_limit_maps.cf
 settpl /etc/postfix/sql/mysql_virtual_mailbox_maps.cf

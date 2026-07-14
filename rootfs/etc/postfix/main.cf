@@ -128,6 +128,7 @@ smtpd_recipient_restrictions =
         permit_sasl_authenticated,
         permit_mynetworks,
 	check_recipient_access regexp:/etc/postfix/restrict.all.alias,
+	check_recipient_access mysql:/etc/postfix/sql/mysql_restrict_global_aliases.cf,
         reject_unauth_pipelining,
         reject_unauth_destination,
         permit

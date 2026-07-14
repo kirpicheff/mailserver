@@ -1,0 +1,5 @@
+user = {{ MARIADB_USER }}
+password = {{ MARIADB_PASS }}
+hosts = localhost
+dbname = postfix
+query = SELECT 'REJECT access denied' FROM alias WHERE address='%s' AND goto='[ALL_MAILBOXES]' AND active='1'
