@@ -248,8 +248,8 @@ find /etc/dovecot -type d -exec chmod 750 {} +
 find /etc/dovecot -type f -exec chmod 640 {} +
 
 find /etc/postfix -exec chown root:postfix {} +
-find /etc/postfix -type d -exec chmod 750 {} +
-find /etc/postfix -type f -exec chmod 640 {} +
+find /etc/postfix -type d -exec chmod 755 {} +
+find /etc/postfix -type f -exec chmod 644 {} +
 
 # Права для мониторинга (сессии Dovecot, статус Fail2ban)
 echo "Настройка прав для мониторинга..."
