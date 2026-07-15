@@ -130,6 +130,7 @@ smtpd_recipient_restrictions =
 	check_recipient_access regexp:/etc/postfix/restrict.all.alias,
 	check_recipient_access mysql:/etc/postfix/sql/mysql_restrict_global_aliases.cf,
         reject_unauth_pipelining,
+        reject_unlisted_recipient,
         reject_unauth_destination,
         permit
 
