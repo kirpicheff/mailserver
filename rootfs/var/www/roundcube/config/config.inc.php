@@ -1,6 +1,6 @@
 <?php
 $config = [];
-$config['db_dsnw'] = 'mysql://{{ MARIADB_USER }}:{{ ROUNDCUBE_DB_PASS }}@localhost/roundcube';
+$config['db_dsnw'] = 'mysql://{{ MARIADB_USER }}:{{ ROUNDCUBE_DB_PASS }}@127.0.0.1/roundcube';
 $config['imap_host'] = 'ssl://localhost:993';
 $config['smtp_host'] = 'tls://localhost:587';
 
