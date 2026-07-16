@@ -345,7 +345,7 @@ echo 'MAILTO=""' >>  /etc/crontabs/root
 echo "39 7,19 * * * /bin/sh /scripts/certbot-renew.sh > /dev/null 2>&1" >> /etc/crontabs/root
 echo "*/5 * * * * /usr/bin/php82 /var/www/snappy/snappymail/v/2.38.2/app/cron.php > /dev/null 2>&1" >> /etc/crontabs/root
 echo "30 0 */7 * * /usr/bin/find /data/mail/*/*/.Junk/ -type f -mtime +30 -exec rm {} \; > /dev/null 2>&1" >> /etc/crontabs/root
-echo "*/30 * * * * /usr/sbin/logrotate -f /etc/logrotate.conf -s /tmp/logrotate.status > /dev/null 2>&1" >> /etc/crontabs/root
+echo "*/30 * * * * /usr/sbin/logrotate /etc/logrotate.conf -s /tmp/logrotate.status > /dev/null 2>&1" >> /etc/crontabs/root
 echo "#END" >> /etc/crontabs/root
 
 sed -i "s/define.\'TIMEZONE\', .*;/define(\'TIMEZONE\', \'Europe\/Moscow\');/" /var/www/z-push/config.php
