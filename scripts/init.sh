@@ -235,6 +235,7 @@ chown -R nginx:nginx /var/www/snappy /var/www/roundcube
 postfix set-permissions 2>/dev/null || true
 # Удаление stale lock-файла
 rm -f /var/lib/postfix/master.lock
+rm -f /run/dovecot/master.pid
 
 # Доступ для MailAdmin к сертификатам и конфигам
 echo "Настройка доступа для MailAdmin и сервисов..."
