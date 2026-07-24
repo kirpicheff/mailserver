@@ -4,6 +4,14 @@
 IMAGE="kirpich/mailserver"
 NAME="mailserver"
 
+cleanup_containers() {
+    local img="$1"
+    local name="$2"
+    echo "Остановка и удаление всех контейнеров с образом $img..."
+    docker rm -f $(docker ps -a -q --filter "ancestor=$img") 2>/dev/null || true
+    docker rm -f "$name" 2>/dev/null || true
+}
+
 echo "=== [1/4] Проверка обновлений ==="
 OLD_IMAGE_ID=$(docker images -q $IMAGE)
 
@@ -13,19 +21,16 @@ NEW_IMAGE_ID=$(docker images -q $IMAGE)
 
 if [ "$OLD_IMAGE_ID" = "$NEW_IMAGE_ID" ] && [ ! -z "$OLD_IMAGE_ID" ]; then
     echo "Образ не изменился. Обновление не требуется."
-    # Проверяем, запущен ли контейнер вообще
     if docker ps -f "name=$NAME" --format '{{.Names}}' | grep -q "^$NAME$"; then
         echo "Контейнер $NAME уже запущен."
     else
         echo "Контейнер не запущен, запускаю..."
+        cleanup_containers "$IMAGE" "$NAME"
         sh start.sh
     fi
 else
     echo "=== [2/4] Обнаружено обновление или отсутствие образа ==="
-    
-    echo "Остановка и удаление старого контейнера $NAME..."
-    docker stop $NAME 2>/dev/null
-    docker rm $NAME 2>/dev/null
+    cleanup_containers "$IMAGE" "$NAME"
 
     echo "=== [3/4] Запуск новой версии ==="
     sh start.sh
