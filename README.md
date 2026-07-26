@@ -112,16 +112,6 @@ docker rm mailserver
 > [!NOTE]
 > If you are using the source repository, you can use the included `control.sh` (for management and updates) or `upgrade.sh` (for database migrations) helper scripts.
 
-## 🛡 Security
-
-> [!WARNING]
-> Never commit real passwords, domains, or IP addresses to this repository. All sensitive data should be passed via environment variables or handled outside of version control.
-
-If you have accidentally committed sensitive data, please follow these steps:
-1. Change all compromised passwords and keys immediately.
-2. Use tools like `git filter-repo` or [BFG Repo-Cleaner](https://rtyley.github.io/bfg-repo-cleaner/) to remove sensitive data from your git history.
-3. Update your local and remote repositories.
-
 ## 📜 License
 
 
