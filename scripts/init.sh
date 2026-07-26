@@ -243,6 +243,16 @@ addgroup mailadmin dovecot || true
 addgroup mailadmin postfix || true
 addgroup vmail postfix || true
 
+# Инициализация persistent-конфигурации jail.local для Fail2ban
+if [ ! -f /data/fail2ban/jail.local ]; then
+    cat <<'EOF' > /data/fail2ban/jail.local
+[DEFAULT]
+# Добавляйте сюда доверенные IP-адреса и подсети через пробел (например, IP офиса)
+# ignoreip = 127.0.0.1/8 17.0.0.1/8 192.168.0.0/16 203.0.113.50
+EOF
+fi
+ln -sf /data/fail2ban/jail.local /etc/fail2ban/jail.local
+
 chown -R root:mail /data/cert /etc/fail2ban /data/fail2ban
 chmod -R 750 /data/cert /etc/fail2ban /data/fail2ban
 
