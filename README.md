@@ -110,7 +110,7 @@ docker rm mailserver
 ```
 
 > [!NOTE]
-> If you are using the source repository, you can use the included `update.sh` (for regular updates) or `upgrade.sh` (for database migrations) helper scripts.
+> If you are using the source repository, you can use the included `control.sh` (for management and updates) or `upgrade.sh` (for database migrations) helper scripts.
 
 ## 🛡 Security
 
