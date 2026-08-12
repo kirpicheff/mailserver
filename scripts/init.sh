@@ -236,6 +236,7 @@ postfix set-permissions 2>/dev/null || true
 # Удаление stale lock-файла
 rm -f /var/lib/postfix/master.lock
 rm -f /run/dovecot/master.pid
+rm -f /var/run/rsyslogd.pid /run/rsyslogd.pid
 
 # Доступ для MailAdmin к сертификатам и конфигам
 echo "Настройка доступа для MailAdmin и сервисов..."
