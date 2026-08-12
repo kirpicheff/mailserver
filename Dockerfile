@@ -88,6 +88,9 @@ RUN	wget https://github.com/the-djmaze/snappymail/releases/download/v2.38.2/snap
 	mkdir -p /var/www/snappy && unzip -q /tmp/snappy.zip -d /var/www/snappy && \
 	chown -R nginx:nginx /var/www/snappy && rm /tmp/snappy.zip
 
+# Install SnappyMail Plugins
+COPY snappy-plugins /opt/snappy-plugins
+
 # Install Roundcube
 RUN	wget https://github.com/roundcube/roundcubemail/releases/download/1.6.6/roundcubemail-1.6.6-complete.tar.gz -O /tmp/roundcube.tar.gz && \
 	tar -zxf /tmp/roundcube.tar.gz -C /var/www/ && mv /var/www/roundcubemail-1.6.6 /var/www/roundcube && \

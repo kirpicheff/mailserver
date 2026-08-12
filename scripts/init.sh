@@ -392,6 +392,14 @@ rm -rf /var/www/snappy/data
 ln -s /data/snappy /var/www/snappy/data
 chown -R nginx:nginx /data/snappy
 
+# Установка и обновление плагинов SnappyMail при каждом старте
+PLUGINS_DIR="/data/snappy/_data_/_default_/plugins"
+if [ -d /opt/snappy-plugins ]; then
+    mkdir -p "$PLUGINS_DIR"
+    cp -rf /opt/snappy-plugins/* "$PLUGINS_DIR/"
+    chown -R nginx:nginx "$PLUGINS_DIR"
+fi
+
 # Настройка персистентности Roundcube (temp/logs)
 if [ ! -d /data/roundcube/temp ]; then
     mkdir -p /data/roundcube/temp /data/roundcube/logs

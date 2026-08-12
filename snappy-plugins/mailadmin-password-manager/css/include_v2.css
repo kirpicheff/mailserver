@@ -1,0 +1,176 @@
+.mailadmin-forgot-wrapper {
+	margin-top: 12px;
+	text-align: center;
+}
+
+.mailadmin-forgot-link {
+	color: var(--link-color, #0066cc);
+	font-size: 0.9em;
+	text-decoration: none;
+	cursor: pointer;
+	transition: opacity 0.2s ease;
+}
+
+.mailadmin-forgot-link:hover {
+	opacity: 0.8;
+	text-decoration: underline;
+}
+
+/* Модальное окно */
+.mailadmin-modal-overlay {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.55);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	z-index: 99999;
+}
+
+.mailadmin-modal-content {
+	background: var(--login-bg-color, var(--dialog-bg-clr, #ffffff));
+	color: var(--login-color, var(--dialog-clr, #333));
+	border: var(--login-border, 1px solid var(--dialog-border-clr, transparent));
+	border-radius: var(--login-border-radius, var(--dialog-border-radius, 8px));
+	width: 90%;
+	max-width: 440px;
+	box-shadow: var(--login-box-shadow, 0 10px 25px rgba(0, 0, 0, 0.2));
+	overflow: hidden;
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.mailadmin-modal-header {
+	padding: 16px 20px;
+	background: transparent;
+	border-bottom: var(--login-border, 1px solid var(--dialog-border-clr, #e1e8ed));
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.mailadmin-modal-header h3 {
+	margin: 0;
+	font-size: 1.15rem;
+	color: var(--login-color, var(--dialog-clr, #2c3e50));
+	font-weight: 600;
+}
+
+.mailadmin-modal-close {
+	font-size: 1.5rem;
+	font-weight: bold;
+	color: var(--login-color, var(--dialog-clr, #999));
+	cursor: pointer;
+	line-height: 1;
+	opacity: 0.6;
+}
+
+.mailadmin-modal-close:hover {
+	opacity: 1;
+}
+
+.mailadmin-modal-body {
+	padding: 20px;
+}
+
+.mailadmin-desc {
+	font-size: 0.9rem;
+	color: var(--login-color, var(--dialog-clr, #555));
+	opacity: 0.9;
+	margin-top: 0;
+	margin-bottom: 16px;
+	line-height: 1.4;
+}
+
+.mailadmin-form-group {
+	margin-bottom: 14px;
+}
+
+.mailadmin-form-group label {
+	display: block;
+	font-size: 0.85rem;
+	color: var(--login-color, var(--dialog-clr, #333));
+	margin-bottom: 5px;
+	font-weight: 500;
+}
+
+.mailadmin-input {
+	width: 100%;
+	padding: 9px 12px;
+	background: var(--input-bg-clr, #fff);
+	color: var(--input-clr, #555);
+	border: 1px solid var(--input-border-clr, #ccc);
+	border-radius: var(--input-border-radius, 4px);
+	box-sizing: border-box;
+	font-size: 0.95rem;
+	transition: border-color 0.2s ease;
+}
+
+.mailadmin-input:focus {
+	outline: none;
+	border-color: var(--input-focus-border-clr, #0066cc);
+	box-shadow: 0 0 0 2px rgba(0, 102, 204, 0.15);
+}
+
+.mailadmin-btn {
+	padding: 10px 16px;
+	border-radius: var(--btn-border-radius, 4px);
+	border: none;
+	font-size: 0.9rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: opacity 0.2s ease;
+}
+
+.mailadmin-btn.primary {
+	background: var(--btn-success-bg-clr, #0066cc);
+	color: #fff;
+	width: 100%;
+}
+
+.mailadmin-btn.primary:hover {
+	opacity: 0.85;
+}
+
+.mailadmin-btn.secondary {
+	background: var(--btn-bg-clr, #e4e8eb);
+	color: var(--btn-clr, #333);
+	border: 1px solid var(--btn-border-clr, transparent);
+}
+
+.mailadmin-btn.secondary:hover {
+	opacity: 0.85;
+}
+
+.mailadmin-btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.mailadmin-actions {
+	display: flex;
+	gap: 10px;
+	margin-top: 16px;
+}
+
+.mailadmin-alert {
+	padding: 10px 14px;
+	border-radius: 4px;
+	font-size: 0.88rem;
+	margin-bottom: 16px;
+	line-height: 1.35;
+}
+
+.alert-danger {
+	background: var(--error-bg-clr, #fde8e8);
+	color: var(--error-clr, #9b1c1c);
+	border: 1px solid var(--error-border-clr, #f8b4b4);
+}
+
+.alert-success {
+	background: var(--info-bg-clr, #def7ec);
+	color: var(--info-clr, #03543f);
+	border: 1px solid var(--info-border-clr, #84e1bc);
+}
