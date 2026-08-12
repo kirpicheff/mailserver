@@ -429,6 +429,15 @@ chmod 600 /opt/mailadmin/.env
 chmod 644 /etc/postfix/dynamicmaps.cf || true
 [ -d /etc/postfix/dynamicmaps.cf.d ] && find /etc/postfix/dynamicmaps.cf.d -type d -exec chmod 755 {} + && find /etc/postfix/dynamicmaps.cf.d -type f -exec chmod 644 {} + || true
 
+# Настройка директории вложений и прав для postfix-attacher
+[ -d /data/attachments ] || mkdir -p /data/attachments
+chown -R nginx:nginx /data/attachments
+chmod 755 /data/attachments
+[ -f /opt/postfix-attacher/postfix-attacher ] && chmod +x /opt/postfix-attacher/postfix-attacher || true
+
+# Быстрая точечная передача прав на папки ящиков vmail, созданные от root (ограничено верхними уровнями)
+[ -d /data/mail ] && find /data/mail -maxdepth 3 -user root -exec chown vmail:vmail {} + || true
+
 echo "Setting done. Welcome."
 echo "Tuning TCP keepalive..."
 sysctl -w net.ipv4.tcp_keepalive_time=120

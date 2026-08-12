@@ -22,11 +22,11 @@ submission inet n       -       n       -       -       smtpd
   -o smtpd_client_restrictions=permit_mynetworks,permit_sasl_authenticated,reject
   -o smtpd_sasl_type=dovecot
   -o smtpd_sasl_path=private/auth
-#  -o smtpd_helo_restrictions=$mua_helo_restrictions
-#  -o smtpd_sender_restrictions=$mua_sender_restrictions
-#  -o smtpd_recipient_restrictions=
-#  -o smtpd_relay_restrictions=permit_sasl_authenticated,reject
   -o milter_macro_daemon_name=ORIGINATING
+  -o message_size_limit=1073741824
+  -o smtpd_milters=inet:127.0.0.1:10025,inet:localhost:11332
+  -o milter_default_action=accept
+  -o content_filter=smtp:[127.0.0.1]:10027
 smtps     inet  n       -       n       -       -       smtpd
   -o syslog_name=postfix/smtps
   -o smtpd_tls_wrappermode=yes
@@ -36,6 +36,10 @@ smtps     inet  n       -       n       -       -       smtpd
   -o smtpd_sasl_type=dovecot
   -o smtpd_sasl_path=private/auth
   -o milter_macro_daemon_name=ORIGINATING
+  -o message_size_limit=1073741824
+  -o smtpd_milters=inet:127.0.0.1:10025,inet:localhost:11332
+  -o milter_default_action=accept
+  -o content_filter=smtp:[127.0.0.1]:10027
 #628       inet  n       -       n       -       -       qmqpd
 pickup    unix  n       -       n       60      1       pickup
 cleanup   unix  n       -       n       -       0       cleanup
@@ -128,3 +132,12 @@ scache    unix  -       -       n       -       1       scache
 #mailman   unix  -       n       n       -       -       pipe
 #  flags=FR user=list argv=/usr/lib/mailman/bin/postfix-to-mailman.py
 #  ${nexthop} ${user}
+
+# Внутренняя таможня для исходящей почты после обработки мильтером (порт 10027)
+127.0.0.1:10027 inet n  -       n       -       -       smtpd
+  -o message_size_limit=26214400
+  -o content_filter=
+  -o smtpd_milters=
+  -o smtpd_delay_reject=no
+  -o smtpd_client_restrictions=permit_mynetworks,reject
+
