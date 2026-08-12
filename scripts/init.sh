@@ -392,14 +392,6 @@ rm -rf /var/www/snappy/data
 ln -s /data/snappy /var/www/snappy/data
 chown -R nginx:nginx /data/snappy
 
-# Установка и обновление плагинов SnappyMail при каждом старте
-PLUGINS_DIR="/data/snappy/_data_/_default_/plugins"
-if [ -d /opt/snappy-plugins ]; then
-    mkdir -p "$PLUGINS_DIR"
-    cp -rf /opt/snappy-plugins/* "$PLUGINS_DIR/"
-    chown -R nginx:nginx "$PLUGINS_DIR"
-fi
-
 # Настройка персистентности Roundcube (temp/logs)
 if [ ! -d /data/roundcube/temp ]; then
     mkdir -p /data/roundcube/temp /data/roundcube/logs
@@ -428,6 +420,14 @@ chown mailadmin:mail /opt/mailadmin/.env
 chmod 600 /opt/mailadmin/.env
 chmod 644 /etc/postfix/dynamicmaps.cf || true
 [ -d /etc/postfix/dynamicmaps.cf.d ] && find /etc/postfix/dynamicmaps.cf.d -type d -exec chmod 755 {} + && find /etc/postfix/dynamicmaps.cf.d -type f -exec chmod 644 {} + || true
+
+# Установка и обновление плагинов SnappyMail при каждом старте
+PLUGINS_DIR="/data/snappy/_data_/_default_/plugins"
+if [ -d /opt/snappy-plugins ]; then
+    mkdir -p "$PLUGINS_DIR"
+    cp -rf /opt/snappy-plugins/* "$PLUGINS_DIR/"
+    chown -R nginx:nginx "$PLUGINS_DIR"
+fi
 
 # Настройка директории вложений и прав для postfix-attacher
 [ -d /data/attachments ] || mkdir -p /data/attachments
