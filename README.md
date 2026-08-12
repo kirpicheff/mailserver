@@ -13,6 +13,7 @@ Comprehensive, lightweight, and high-performance mail server based on **Alpine L
 *   **ActiveSync**: **Z-Push** support for mobile synchronization.
 *   **Security**: Integrated **Fail2ban**, **OpenDKIM**, and **Rspamd** for spam filtering.
 *   **Admin Panel**: Custom [MailAdmin](https://github.com/kirpicheff/mailadmin) UI for easy domain and mailbox management.
+*   **Large Attachment Linker**: Postfix milter for automatically converting large email attachments (>25MB) into HTTPS download links.
 *   **Performance**: Optimized TCP stack and lightweight Alpine footprint.
 *   **Auto-SSL**: Built-in Let's Encrypt support via Certbot.
 
@@ -34,7 +35,7 @@ Comprehensive, lightweight, and high-performance mail server based on **Alpine L
 
 
 > [!IMPORTANT]
-> This repository does not include the `mailadmin` binary. You must download the latest release from the [MailAdmin repository](https://github.com/kirpicheff/mailadmin) and place it in `rootfs/opt/mailadmin/mailadmin` before building the Docker image.
+> This repository requires binary files for `mailadmin` (`rootfs/opt/mailadmin/mailadmin`) and `postfix-attacher` (`rootfs/opt/postfix-attacher/postfix-attacher`) before building the Docker image.
 
 To run the mail server, use the following command:
 
@@ -93,6 +94,7 @@ For your mail server to work correctly and not end up in spam, you MUST configur
 
 All important data is stored in the `/data` volume (map this to a persistent path on your host):
 *   `/data/mail`: Mailboxes (vmail storage)
+*   `/data/attachments`: Stored attachments converted to download links
 *   `/data/mysql`: MariaDB databases and system tables
 *   `/data/cert`: Let's Encrypt certificates
 *   `/data/dkim`: OpenDKIM keys and configs

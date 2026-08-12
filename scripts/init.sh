@@ -435,8 +435,8 @@ chown -R nginx:nginx /data/attachments
 chmod 755 /data/attachments
 [ -f /opt/postfix-attacher/postfix-attacher ] && chmod +x /opt/postfix-attacher/postfix-attacher || true
 
-# Быстрая точечная передача прав на папки ящиков vmail, созданные от root (ограничено верхними уровнями)
-[ -d /data/mail ] && find /data/mail -maxdepth 3 -user root -exec chown vmail:vmail {} + || true
+# Быстрая точечная передача прав на структуры ящиков и индексы Dovecot (без сканирования писем в cur/new)
+[ -d /data/mail ] && find /data/mail -user root -not -path "*/cur/*" -not -path "*/new/*" -exec chown vmail:vmail {} + || true
 
 echo "Setting done. Welcome."
 echo "Tuning TCP keepalive..."
