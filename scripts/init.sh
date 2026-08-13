@@ -332,11 +332,12 @@ newaliases
 
 [ -d /etc/dovecot/sieve-filter ] || mkdir /etc/dovecot/sieve-filter
 
-sed -i 's/^upload_max_filesize =.*/upload_max_filesize = '"${UPLOAD_SIZE}"'/' /etc/php82/php.ini
+sed -i "s/^upload_max_filesize =.*/upload_max_filesize = '"${UPLOAD_SIZE}"'/' /etc/php82/php.ini
 sed -i 's/^post_max_size =.*/post_max_size = '"${POST_SIZE}"'/' /etc/php82/php.ini
 sed -i "s/^memory_limit =.*/memory_limit = 256M/" /etc/php82/php.ini
-#sed -i "s/max_execution_time =.*/max_execution_time = 600/" /etc/php82/php.ini
-#sed -i "s/max_input_time =.*/max_input_time = 600/" /etc/php82/php.ini
+sed -i "s/^;*max_execution_time =.*/max_execution_time = 600/" /etc/php82/php.ini
+sed -i "s/^;*max_input_time =.*/max_input_time = 600/" /etc/php82/php.ini
+sed -i "s/^;*default_socket_timeout =.*/default_socket_timeout = 300/" /etc/php82/php.ini
 
 sed -i "s/date.timezone =/date.timezone = Europe\/Moscow/" /etc/php82/php.ini
 sed -i "s/^short_open_tag = .*/short_open_tag = On/g" /etc/php82/php.ini
@@ -408,6 +409,7 @@ if [ -f "$APP_CONFIG" ]; then
     sed -i '/^admin_password =/d' "$APP_CONFIG"
     sed -i '/^admin_login =/d' "$APP_CONFIG"
     sed -i '/^admin_totp =/d' "$APP_CONFIG"
+    sed -i 's/^timeout =.*/timeout = 300/g' "$APP_CONFIG"
 fi
 
 chown postfix:postfix /etc/dovecot/quota*
