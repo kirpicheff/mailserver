@@ -332,8 +332,8 @@ newaliases
 
 [ -d /etc/dovecot/sieve-filter ] || mkdir /etc/dovecot/sieve-filter
 
-sed -i "s/^upload_max_filesize =.*/upload_max_filesize = '"${UPLOAD_SIZE}"'/' /etc/php82/php.ini
-sed -i 's/^post_max_size =.*/post_max_size = '"${POST_SIZE}"'/' /etc/php82/php.ini
+sed -i "s/^upload_max_filesize =.*/upload_max_filesize = ${UPLOAD_SIZE}/" /etc/php82/php.ini
+sed -i "s/^post_max_size =.*/post_max_size = ${POST_SIZE}/" /etc/php82/php.ini
 sed -i "s/^memory_limit =.*/memory_limit = 256M/" /etc/php82/php.ini
 sed -i "s/^;*max_execution_time =.*/max_execution_time = 600/" /etc/php82/php.ini
 sed -i "s/^;*max_input_time =.*/max_input_time = 600/" /etc/php82/php.ini
@@ -361,15 +361,15 @@ echo "30 0 */7 * * /usr/bin/find /data/mail/*/*/.Junk/ -type f -mtime +30 -exec 
 echo "*/30 * * * * /usr/sbin/logrotate /etc/logrotate.conf -s /tmp/logrotate.status > /dev/null 2>&1" >> /etc/crontabs/root
 echo "#END" >> /etc/crontabs/root
 
-sed -i "s/define.\'TIMEZONE\', .*;/define(\'TIMEZONE\', \'Europe\/Moscow\');/" /var/www/z-push/config.php
-sed -i "s/define.\'BACKEND_PROVIDER\', .*/define(\'BACKEND_PROVIDER\', \'BackendIMAP\');/" /var/www/z-push/config.php
-sed -i "s/define.\'LOGLEVEL\', .*/define(\'LOGLEVEL\', LOGLEVEL_OFF);/" /var/www/z-push/config.php
-sed -i "s/define.\'IMAP_SERVER\', .*/define(\'IMAP_SERVER\', \'localhost\');/" /var/www/z-push/backend/imap/config.php
-sed -i "s/define.\'IMAP_PORT\', .*/define(\'IMAP_PORT\', 993);/" /var/www/z-push/backend/imap/config.php
-sed -i "s/define.\'IMAP_OPTIONS\', .*/define(\'IMAP_OPTIONS\', \'\/ssl\/novalidate-cert\');/" /var/www/z-push/backend/imap/config.php
-sed -i "s/define.\'IMAP_DEFAULTFROM\', .*/define(\'IMAP_DEFAULTFROM\', \'\');/" /var/www/z-push/backend/imap/config.php
-sed -i "s/define.\'IMAP_FOLDER_CONFIGURED\', .*/define(\'IMAP_FOLDER_CONFIGURED\', true);/" /var/www/z-push/backend/imap/config.php
-sed -i "s/maxattsize =.*/maxattsize = 31457280/" /var/www/z-push/policies.ini
+sed -i "s/define('TIMEZONE', .*;/define('TIMEZONE', 'Europe\/Moscow');/" /var/www/z-push/config.php
+sed -i "s#define('BACKEND_PROVIDER', .*#define('BACKEND_PROVIDER', 'BackendIMAP');#" /var/www/z-push/config.php
+sed -i "s#define('LOGLEVEL', .*#define('LOGLEVEL', LOGLEVEL_OFF);#" /var/www/z-push/config.php
+sed -i "s#define('IMAP_SERVER', .*#define('IMAP_SERVER', 'localhost');#" /var/www/z-push/backend/imap/config.php
+sed -i "s#define('IMAP_PORT', .*#define('IMAP_PORT', 993);#" /var/www/z-push/backend/imap/config.php
+sed -i "s#define('IMAP_OPTIONS', .*#define('IMAP_OPTIONS', '/ssl/novalidate-cert');#" /var/www/z-push/backend/imap/config.php
+sed -i "s#define('IMAP_DEFAULTFROM', .*#define('IMAP_DEFAULTFROM', '');#" /var/www/z-push/backend/imap/config.php
+sed -i "s#define('IMAP_FOLDER_CONFIGURED', .*#define('IMAP_FOLDER_CONFIGURED', true);#" /var/www/z-push/backend/imap/config.php
+
 
 
 sed -i '/.mysqld.$/a expire_logs_days=30'  /etc/my.cnf.d/mariadb-server.cnf
