@@ -83,19 +83,6 @@ RUN	 wget https://github.com/Z-Hub/Z-Push/archive/refs/tags/2.7.4.tar.gz -O /tmp
 
 RUN	chown nginx:nginx /var/lib/z-push/ /var/log/z-push/ && rm -rf /tmp/z-push* 
 
-# Install SnappyMail
-RUN	wget https://github.com/the-djmaze/snappymail/releases/download/v2.38.2/snappymail-2.38.2.zip -O /tmp/snappy.zip && \
-	mkdir -p /var/www/snappy && unzip -q /tmp/snappy.zip -d /var/www/snappy && \
-	chown -R nginx:nginx /var/www/snappy && rm /tmp/snappy.zip
-
-# Install SnappyMail Plugins
-COPY snappy-plugins /opt/snappy-plugins
-
-# Install Roundcube
-RUN	wget https://github.com/roundcube/roundcubemail/releases/download/1.6.6/roundcubemail-1.6.6-complete.tar.gz -O /tmp/roundcube.tar.gz && \
-	tar -zxf /tmp/roundcube.tar.gz -C /var/www/ && mv /var/www/roundcubemail-1.6.6 /var/www/roundcube && \
-	chown -R nginx:nginx /var/www/roundcube && rm /tmp/roundcube.tar.gz
-
 RUN	mkdir -p /run/rspamd
 
 COPY scripts /scripts/
@@ -104,6 +91,7 @@ COPY rootfs /
 
 RUN	chmod +x -R /scripts && \
 	chmod +x -R /opt/mailadmin && \
+	chmod +x -R /opt/wallmail && \
 	[ -d /opt/postfix-attacher ] && chmod +x -R /opt/postfix-attacher || true && \
 	ln -sf /usr/share/zoneinfo/Europe/Moscow /etc/localtime && \
 	mkdir -p /var/log/supervisor && \

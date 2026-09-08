@@ -1,0 +1,9 @@
+{
+  "id": "undo-send",
+  "name": "Отмена отправки",
+  "version": "1.0.0",
+  "description": "Позволяет отменить отправку письма в течение настраиваемого времени (5–30 секунд)",
+  "author": "WallMail Team",
+  "backend_entry": "",
+  "frontend_entry": "frontend.js"
+}

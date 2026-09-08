@@ -1,0 +1,9 @@
+{
+  "id": "scheduled-send",
+  "name": "Отложенная отправка",
+  "version": "1.0.0",
+  "description": "Планирование отправки писем на указанную дату и время с удобным управлением очередью",
+  "author": "WallMail Team",
+  "backend_entry": "backend.js",
+  "frontend_entry": "frontend.js"
+}

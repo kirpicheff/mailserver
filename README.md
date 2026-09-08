@@ -9,7 +9,7 @@ Comprehensive, lightweight, and high-performance mail server based on **Alpine L
 ## 🚀 Key Features
 
 *   **Full Stack**: Postfix, Dovecot, MariaDB, Rspamd, and Nginx.
-*   **Webmail Options**: Built-in **Roundcube** and **SnappyMail**.
+*   **Webmail**: Built-in **WallMail** (Go + Vue 3).
 *   **ActiveSync**: **Z-Push** support for mobile synchronization.
 *   **Security**: Integrated **Fail2ban**, **OpenDKIM**, and **Rspamd** for spam filtering.
 *   **Admin Panel**: Custom [MailAdmin](https://github.com/kirpicheff/mailadmin) UI for easy domain and mailbox management.

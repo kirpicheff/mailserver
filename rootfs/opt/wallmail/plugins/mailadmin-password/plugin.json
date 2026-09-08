@@ -1,0 +1,12 @@
+{
+  "id": "mailadmin-password",
+  "name": "MailAdmin Password Manager",
+  "version": "1.0.0",
+  "author": "kirpicheff",
+  "description": "Смена пароля ящика пользователем и администратором, а также сброс забытого пароля через MailAdmin REST API",
+  "backend_entry": "backend.js",
+  "frontend_entry": "frontend.js",
+  "capabilities": ["password_manager"],
+  "hooks": ["mailbox:password", "auth:login_extra", "admin:tab"],
+  "enabled": true
+}

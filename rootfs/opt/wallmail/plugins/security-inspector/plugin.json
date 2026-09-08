@@ -1,0 +1,13 @@
+{
+  "id": "security-inspector",
+  "name": "Антифишинг и аудит безопасности",
+  "version": "1.0.1",
+  "description": "Проверка подлинности отправителя (SPF/DKIM/DMARC), защита от гомоглифов, поддельных доменов и фишинговых ссылок",
+  "author": "WallMail Security Team",
+  "frontend_entry": "frontend.js",
+  "hooks": [
+    "message:sender_badge",
+    "message:banner",
+    "settings:tab"
+  ]
+}

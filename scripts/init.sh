@@ -28,9 +28,8 @@ if [ -z ${MESSAGE_SIZE} ]; then export MESSAGE_SIZE=52428800; fi
 if [ -z ${UPLOAD_SIZE} ]; then export UPLOAD_SIZE=1000M; fi
 if [ -z ${POST_SIZE} ]; then export POST_SIZE=1000M; fi
 if [ -z ${RSPAMD_PASSWORD} ]; then export RSPAMD_PASSWORD='PassWord'; fi
-if [ -z ${DEFAULT_WEBMAIL} ]; then export DEFAULT_WEBMAIL=snappy; fi
-if [ -z ${ROUNDCUBE_DB_PASS} ]; then export ROUNDCUBE_DB_PASS=${MARIADB_PASS}; fi
 if [ -z ${JWT_SECRET} ]; then export JWT_SECRET=$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32); fi
+
 
 
 
@@ -50,8 +49,7 @@ then
 [ -d /data/mail ] || mkdir /data/mail
 [ -d /data/rspamd ] || mkdir /data/rspamd
 [ -d /data/redis ] || mkdir /data/redis
-[ -d /data/snappy ] || mkdir /data/snappy
-[ -d /data/roundcube ] || mkdir /data/roundcube
+[ -d /data/wallmail ] || mkdir -p /data/wallmail/plugins
 [ -d /data/mysql ] || mkdir /data/mysql
 [ -d /data/fail2ban ] || mkdir /data/fail2ban
 
@@ -70,12 +68,8 @@ chown -R postfix:postfix /var/lib/postfix
 chown -R postfix:postfix /etc/postfix
 chown -R opendkim:mail /etc/opendkim
 chown -R rspamd:rspamd /data/rspamd
-chown -R rspamd:rspamd /etc/rspamd
-chown -R nginx:nginx /var/www/snappy
-chown -R nginx:nginx /var/www/roundcube
-# Права на папки данных (если они примонтированы)
-[ -d /data/snappy ] && chown -R nginx:nginx /data/snappy
-[ -d /data/roundcube ] && chown -R nginx:nginx /data/roundcube
+[ -d /data/wallmail ] && chown -R root:root /data/wallmail
+
 
 cat <<EOF > /data/sieve/default.sieve
 # Global default sieve script
@@ -177,10 +171,9 @@ mysqld_safe --skip-grant-tables --user=mysql --datadir=/data/mysql &
 
 mysql -u root -e "DELETE FROM user; FLUSH PRIVILEGES; CREATE USER '${MARIADB_USER}'@'%' IDENTIFIED BY '${MARIADB_PASS}'; GRANT ALL PRIVILEGES ON *.* TO '${MARIADB_USER}'@'%' WITH GRANT OPTION;" mysql
 mysql -u $MARIADB_USER -p$MARIADB_PASS -e 'CREATE DATABASE IF NOT EXISTS postfix CHARACTER SET utf8 COLLATE utf8_general_ci;'
-mysql -u $MARIADB_USER -p$MARIADB_PASS -e "CREATE DATABASE IF NOT EXISTS roundcube CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-mysql -u $MARIADB_USER -p$MARIADB_PASS roundcube < /var/www/roundcube/SQL/mysql.initial.sql
 
 mysqladmin -u $MARIADB_USER -p$MARIADB_PASS shutdown
+
 
 
 
@@ -227,9 +220,8 @@ fi
 chown -R postfix:postfix /var/lib/postfix
 chown -R opendkim:mail /etc/opendkim
 chown -R rspamd:rspamd /data/rspamd /etc/rspamd
-chown -R nginx:nginx /var/www/snappy /var/www/roundcube
-[ -d /data/snappy ] && chown -R nginx:nginx /data/snappy
-[ -d /data/roundcube ] && chown -R nginx:nginx /data/roundcube
+[ -d /data/wallmail ] && chown -R root:root /data/wallmail
+
 
 # Исправление прав на очереди Postfix (штатная утилита)
 postfix set-permissions 2>/dev/null || true
@@ -304,11 +296,9 @@ settpl /etc/postfixadmin/config.inc.php
 settpl /opt/mailadmin/.env
 settpl /etc/nginx/conf.d/0-autoconfig.conf
 settpl /etc/nginx/conf.d/2-postfixadmin.conf
-settpl /etc/nginx/conf.d/3-snappymail.conf
-settpl /etc/nginx/conf.d/4-roundcube.conf
 settpl /etc/nginx/conf.d/5-webmail.conf
-settpl /var/www/roundcube/config/config.inc.php
 settpl /var/www/autoconfig/autoconfig.settings.php
+
 
 # Пароль RSPAMD
 
@@ -356,7 +346,6 @@ sed -i "s/\;pm.max_requests =.*/pm.max_requests = 200/"  /etc/php82/php-fpm.d/ww
 echo "PATH=/usr/sbin:/usr/bin:/sbin:/bin"  > /etc/crontabs/root
 echo 'MAILTO=""' >>  /etc/crontabs/root
 echo "39 7,19 * * * /bin/sh /scripts/certbot-renew.sh > /dev/null 2>&1" >> /etc/crontabs/root
-echo "*/5 * * * * /usr/bin/php82 /var/www/snappy/snappymail/v/2.38.2/app/cron.php > /dev/null 2>&1" >> /etc/crontabs/root
 echo "30 0 */7 * * /usr/bin/find /data/mail/*/*/.Junk/ -type f -mtime +30 -exec rm {} \; > /dev/null 2>&1" >> /etc/crontabs/root
 echo "*/30 * * * * /usr/sbin/logrotate /etc/logrotate.conf -s /tmp/logrotate.status > /dev/null 2>&1" >> /etc/crontabs/root
 echo "#END" >> /etc/crontabs/root
@@ -378,39 +367,17 @@ sed -i '/.mysqld.$/a bind-address = 127.0.0.1'  /etc/my.cnf.d/mariadb-server.cnf
 sed -i '/.mysqld.$/a port = 3306'  /etc/my.cnf.d/mariadb-server.cnf
 sed -i "s/skip-networking/#skip-networking/"  /etc/my.cnf.d/mariadb-server.cnf
 
-chown -R nginx:nginx /var/www/snappy
-chown -R nginx:nginx /var/www/roundcube
 mkdir -p /var/lib/php82/sessions
 chown -R nginx:nginx /var/lib/php82/sessions
 chmod 777 /var/lib/php82/sessions
 
-# Настройка персистентности SnappyMail
-if [ ! -d /data/snappy/_data_ ]; then
-    mkdir -p /data/snappy
-    cp -r /var/www/snappy/data/* /data/snappy/ 2>/dev/null || true
+# Настройка персистентности и плагинов WallMail
+mkdir -p /data/wallmail/plugins
+if [ -d /opt/wallmail/plugins ]; then
+    cp -rn /opt/wallmail/plugins/* /data/wallmail/plugins/ 2>/dev/null || cp -r /opt/wallmail/plugins/* /data/wallmail/plugins/ 2>/dev/null || true
 fi
-rm -rf /var/www/snappy/data
-ln -s /data/snappy /var/www/snappy/data
-chown -R nginx:nginx /data/snappy
-
-# Настройка персистентности Roundcube (temp/logs)
-if [ ! -d /data/roundcube/temp ]; then
-    mkdir -p /data/roundcube/temp /data/roundcube/logs
-fi
-rm -rf /var/www/roundcube/temp /var/www/roundcube/logs
-ln -s /data/roundcube/temp /var/www/roundcube/temp
-ln -s /data/roundcube/logs /var/www/roundcube/logs
-chown -R nginx:nginx /data/roundcube
-
-# Глобальный фикс шифрования и админки SnappyMail
-APP_CONFIG="/data/snappy/_data_/_default_/configs/application.ini"
-if [ -f "$APP_CONFIG" ]; then
-    sed -i 's/^encrypt_cipher =.*/encrypt_cipher = "sodium"/g' "$APP_CONFIG"
-    sed -i '/^admin_password =/d' "$APP_CONFIG"
-    sed -i '/^admin_login =/d' "$APP_CONFIG"
-    sed -i '/^admin_totp =/d' "$APP_CONFIG"
-    sed -i 's/^timeout =.*/timeout = 300/g' "$APP_CONFIG"
-fi
+chown -R root:root /data/wallmail
+chmod -R 755 /data/wallmail
 
 chown postfix:postfix /etc/dovecot/quota*
 
@@ -423,13 +390,6 @@ chmod 600 /opt/mailadmin/.env
 chmod 644 /etc/postfix/dynamicmaps.cf || true
 [ -d /etc/postfix/dynamicmaps.cf.d ] && find /etc/postfix/dynamicmaps.cf.d -type d -exec chmod 755 {} + && find /etc/postfix/dynamicmaps.cf.d -type f -exec chmod 644 {} + || true
 
-# Установка и обновление плагинов SnappyMail при каждом старте
-PLUGINS_DIR="/data/snappy/_data_/_default_/plugins"
-if [ -d /opt/snappy-plugins ]; then
-    mkdir -p "$PLUGINS_DIR"
-    cp -rf /opt/snappy-plugins/* "$PLUGINS_DIR/"
-    chown -R nginx:nginx "$PLUGINS_DIR"
-fi
 
 # Настройка директории вложений и прав для postfix-attacher
 [ -d /data/attachments ] || mkdir -p /data/attachments

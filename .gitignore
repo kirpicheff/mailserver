@@ -16,4 +16,9 @@ Thumbs.db
 
 # Binaries
 rootfs/opt/mailadmin/mailadmin
+rootfs/opt/wallmail/wallmail
+
+# Build / deploy artifacts
+wallmail_deploy_vps/
+
 

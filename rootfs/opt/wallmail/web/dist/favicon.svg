@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
+  <defs>
+    <linearGradient id="wm-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0b2447"/>
+      <stop offset="100%" stop-color="#0f3460"/>
+    </linearGradient>
+  </defs>
+  <!-- Squircle / скругленный фон -->
+  <rect width="100" height="100" rx="26" fill="url(#wm-bg)"/>
+  
+  <!-- Фирменный знак WallMail (W + Конверт) -->
+  <g transform="translate(13, 14) scale(0.74)" fill="none" stroke="#ffffff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M50 8 L84 21.5 C88 23 90 26 90 30.5 L90 70 C90 77 84 83 77 83 L23 83 C16 83 10 77 10 70 L10 30.5 C10 26 12 23 16 21.5 L50 8 Z"/>
+    <path d="M14 36 L43 57 C47 60 53 60 57 57 L86 36"/>
+    <path d="M20 74 L46 48 C48.5 45.5 51.5 45.5 54 48 L80 74"/>
+  </g>
+</svg>

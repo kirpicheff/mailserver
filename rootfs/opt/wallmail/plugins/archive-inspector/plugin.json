@@ -1,0 +1,12 @@
+{
+  "id": "archive-inspector",
+  "name": "Просмотрщик архивов",
+  "version": "1.0.0",
+  "description": "Интерактивный просмотр структуры и файлов внутри прикрепленных архивов (ZIP, TAR, GZ) и скачивание отдельных файлов без загрузки всего архива",
+  "author": "WallMail Team",
+  "backend_entry": "backend.js",
+  "frontend_entry": "frontend.js",
+  "hooks": [
+    "message:attachment_action"
+  ]
+}
