@@ -160,9 +160,6 @@ chown -R vmail:vmail /data/sieve/
 [ -e /data/dkim/${MAIN_DOMAIN}.txt ] || /scripts/dkim.sh ${MAIN_DOMAIN}
 
 
-/scripts/set_setup_password.sh ${SETUP_PASSWORD}
-
-
 mysqld_safe --skip-grant-tables --user=mysql --datadir=/data/mysql &
         while [ ! -e /run/mysqld/mysqld.sock ]; do
                 inotifywait -e create -q /run/mysqld/
@@ -246,18 +243,27 @@ EOF
 fi
 ln -sf /data/fail2ban/jail.local /etc/fail2ban/jail.local
 
-chown -R root:mail /data/cert /etc/fail2ban /data/fail2ban
-chmod -R 750 /data/cert /etc/fail2ban /data/fail2ban
+# Рекурсивная настройка прав на конфиги и сертификаты выполняется разово при первой инициализации
+if [ ! -e /data/.service_permissions_set ]; then
+    chown -R root:mail /data/cert /etc/fail2ban /data/fail2ban
+    chmod -R 750 /data/cert /etc/fail2ban /data/fail2ban
 
-# Разрешаем MailAdmin читать конфиги почтовых служб через соответствующие группы
-# Исправляем и папки, и файлы рекурсивно
-find /etc/dovecot -exec chown root:dovecot {} +
-find /etc/dovecot -type d -exec chmod 750 {} +
-find /etc/dovecot -type f -exec chmod 640 {} +
+    # Разрешаем MailAdmin читать конфиги почтовых служб через соответствующие группы
+    # Исправляем и папки, и файлы рекурсивно
+    find /etc/dovecot -exec chown root:dovecot {} +
+    find /etc/dovecot -type d -exec chmod 750 {} +
+    find /etc/dovecot -type f -exec chmod 640 {} +
 
-find /etc/postfix -exec chown root:postfix {} +
-find /etc/postfix -type d -exec chmod 755 {} +
-find /etc/postfix -type f -exec chmod 644 {} +
+    find /etc/postfix -exec chown root:postfix {} +
+    find /etc/postfix -type d -exec chmod 755 {} +
+    find /etc/postfix -type f -exec chmod 644 {} +
+
+    touch /data/.service_permissions_set
+else
+    # При повторных стартах проверяем только верхнеуровневые директории без медленного рекурсивного обхода
+    chown root:mail /data/cert /etc/fail2ban /data/fail2ban
+    chmod 750 /data/cert /etc/fail2ban /data/fail2ban
+fi
 
 # Права для мониторинга (сессии Dovecot, статус Fail2ban)
 echo "Настройка прав для мониторинга..."
@@ -272,7 +278,9 @@ fi
 touch /var/log/mail.log /var/log/messages /var/log/fail2ban.log
 chown root:mail /var/log/mail.log /var/log/messages /var/log/fail2ban.log
 chmod 640 /var/log/mail.log /var/log/messages /var/log/fail2ban.log
+echo "Права для мониторинга настроены."
 
+echo "Генерация конфигурационных файлов из шаблонов..."
 settpl() {
 mv "$1" "$1.tpl" # envtpl requires files to have .tpl extension
   envtpl "$1.tpl"
@@ -291,25 +299,25 @@ settpl /etc/postfix/sql/mysql_restrict_global_aliases.cf
 settpl /etc/postfix/sql/mysql_virtual_domains_maps.cf
 settpl /etc/postfix/sql/mysql_virtual_mailbox_limit_maps.cf
 settpl /etc/postfix/sql/mysql_virtual_mailbox_maps.cf
-settpl /etc/postfixadmin/config.inc.php
 # Генерация конфига для MailAdmin
 settpl /opt/mailadmin/.env
 settpl /etc/nginx/conf.d/0-autoconfig.conf
 settpl /etc/nginx/conf.d/2-postfixadmin.conf
 settpl /etc/nginx/conf.d/5-webmail.conf
 settpl /var/www/autoconfig/autoconfig.settings.php
-
+echo "Конфигурационные файлы сгенерированы."
 
 # Пароль RSPAMD
-
+echo "Генерация пароля Rspamd..."
 PASSWORD=$(rspamadm pw --quiet --encrypt --type pbkdf2 --password "${RSPAMD_PASSWORD}")
 echo $PASSWORD > /tmp/1.txt
 sed -i 's|.* ||' /tmp/1.txt
 PASSWORD=`cat /tmp/1.txt`
 rm -rf /tmp/1.txt
 sed -i "s|<PASSWORD>|${PASSWORD}|g" /etc/rspamd/local.d/worker-controller.inc
+echo "Пароль Rspamd настроен."
 
-
+echo "Настройка параметров Postfix, Dovecot и PHP..."
 postconf -e "smtpd_tls_cert_file = /data/cert/live/${MAIL_SERVER}/fullchain.pem"
 postconf -e "smtpd_tls_key_file = /data/cert/live/${MAIL_SERVER}/privkey.pem"
 postconf -e "smtpd_tls_CAfile = /data/cert/live/${MAIL_SERVER}/chain.pem"
@@ -322,25 +330,26 @@ newaliases
 
 [ -d /etc/dovecot/sieve-filter ] || mkdir /etc/dovecot/sieve-filter
 
-sed -i "s/^upload_max_filesize =.*/upload_max_filesize = ${UPLOAD_SIZE}/" /etc/php82/php.ini
-sed -i "s/^post_max_size =.*/post_max_size = ${POST_SIZE}/" /etc/php82/php.ini
-sed -i "s/^memory_limit =.*/memory_limit = 256M/" /etc/php82/php.ini
-sed -i "s/^;*max_execution_time =.*/max_execution_time = 600/" /etc/php82/php.ini
-sed -i "s/^;*max_input_time =.*/max_input_time = 600/" /etc/php82/php.ini
-sed -i "s/^;*default_socket_timeout =.*/default_socket_timeout = 300/" /etc/php82/php.ini
+sed -i "s/^upload_max_filesize =.*/upload_max_filesize = ${UPLOAD_SIZE}/" /etc/php83/php.ini
+sed -i "s/^post_max_size =.*/post_max_size = ${POST_SIZE}/" /etc/php83/php.ini
+sed -i "s/^memory_limit =.*/memory_limit = 256M/" /etc/php83/php.ini
+sed -i "s/^;*max_execution_time =.*/max_execution_time = 600/" /etc/php83/php.ini
+sed -i "s/^;*max_input_time =.*/max_input_time = 600/" /etc/php83/php.ini
+sed -i "s/^;*default_socket_timeout =.*/default_socket_timeout = 300/" /etc/php83/php.ini
 
-sed -i "s/date.timezone =/date.timezone = Europe\/Moscow/" /etc/php82/php.ini
-sed -i "s/^short_open_tag = .*/short_open_tag = On/g" /etc/php82/php.ini
-sed -i "s/^user = .*/user = nginx/g" /etc/php82/php-fpm.d/www.conf
-sed -i "s/^group = .*/group = nginx/g" /etc/php82/php-fpm.d/www.conf
-sed -i "s/listen =.*/listen = \/var\/run\/php82-fpm\.sock/" /etc/php82/php-fpm.d/www.conf 
-sed -i "s/\;listen.owner =.*/listen.owner = nginx/" /etc/php82/php-fpm.d/www.conf
-sed -i "s/\;listen.group =.*/listen.group = nginx/" /etc/php82/php-fpm.d/www.conf
-sed -i "s/pm.max_children =.*/pm.max_children = 15/"  /etc/php82/php-fpm.d/www.conf
-sed -i "s/pm.min_spare_servers =.*/pm.min_spare_servers = 3/"  /etc/php82/php-fpm.d/www.conf
-sed -i "s/pm.max_spare_servers =.*/pm.max_spare_servers = 5/"  /etc/php82/php-fpm.d/www.conf
-sed -i "s/pm.start_servers =.*/pm.start_servers = 5/"  /etc/php82/php-fpm.d/www.conf
-sed -i "s/\;pm.max_requests =.*/pm.max_requests = 200/"  /etc/php82/php-fpm.d/www.conf
+sed -i "s/date.timezone =/date.timezone = Europe\/Moscow/" /etc/php83/php.ini
+sed -i "s/^short_open_tag = .*/short_open_tag = On/g" /etc/php83/php.ini
+sed -i "s/^;*session.upload_progress.enabled =.*/session.upload_progress.enabled = Off/" /etc/php83/php.ini
+sed -i "s/^user = .*/user = nginx/g" /etc/php83/php-fpm.d/www.conf
+sed -i "s/^group = .*/group = nginx/g" /etc/php83/php-fpm.d/www.conf
+sed -i "s/listen =.*/listen = \/var\/run\/php83-fpm\.sock/" /etc/php83/php-fpm.d/www.conf 
+sed -i "s/\;listen.owner =.*/listen.owner = nginx/" /etc/php83/php-fpm.d/www.conf
+sed -i "s/\;listen.group =.*/listen.group = nginx/" /etc/php83/php-fpm.d/www.conf
+sed -i "s/pm.max_children =.*/pm.max_children = 15/"  /etc/php83/php-fpm.d/www.conf
+sed -i "s/pm.min_spare_servers =.*/pm.min_spare_servers = 3/"  /etc/php83/php-fpm.d/www.conf
+sed -i "s/pm.max_spare_servers =.*/pm.max_spare_servers = 5/"  /etc/php83/php-fpm.d/www.conf
+sed -i "s/pm.start_servers =.*/pm.start_servers = 5/"  /etc/php83/php-fpm.d/www.conf
+sed -i "s/\;pm.max_requests =.*/pm.max_requests = 200/"  /etc/php83/php-fpm.d/www.conf
 
 # Настройка cron (используем > для первой строки, чтобы не плодить дубли при перезапусках)
 echo "PATH=/usr/sbin:/usr/bin:/sbin:/bin"  > /etc/crontabs/root
@@ -359,19 +368,18 @@ sed -i "s#define('IMAP_OPTIONS', .*#define('IMAP_OPTIONS', '/ssl/novalidate-cert
 sed -i "s#define('IMAP_DEFAULTFROM', .*#define('IMAP_DEFAULTFROM', '');#" /var/www/z-push/backend/imap/config.php
 sed -i "s#define('IMAP_FOLDER_CONFIGURED', .*#define('IMAP_FOLDER_CONFIGURED', true);#" /var/www/z-push/backend/imap/config.php
 
-
-
 sed -i '/.mysqld.$/a expire_logs_days=30'  /etc/my.cnf.d/mariadb-server.cnf
 sed -i '/.mysqld.$/a max_connections=1000'  /etc/my.cnf.d/mariadb-server.cnf
 sed -i '/.mysqld.$/a bind-address = 127.0.0.1'  /etc/my.cnf.d/mariadb-server.cnf
 sed -i '/.mysqld.$/a port = 3306'  /etc/my.cnf.d/mariadb-server.cnf
 sed -i "s/skip-networking/#skip-networking/"  /etc/my.cnf.d/mariadb-server.cnf
 
-mkdir -p /var/lib/php82/sessions
-chown -R nginx:nginx /var/lib/php82/sessions
-chmod 777 /var/lib/php82/sessions
+mkdir -p /var/lib/php83/sessions
+chown -R nginx:nginx /var/lib/php83/sessions
+chmod 777 /var/lib/php83/sessions
 
 # Настройка персистентности и плагинов WallMail
+echo "Настройка плагинов WallMail..."
 mkdir -p /data/wallmail/plugins
 if [ -d /opt/wallmail/plugins ]; then
     cp -rn /opt/wallmail/plugins/* /data/wallmail/plugins/ 2>/dev/null || cp -r /opt/wallmail/plugins/* /data/wallmail/plugins/ 2>/dev/null || true
@@ -390,15 +398,16 @@ chmod 600 /opt/mailadmin/.env
 chmod 644 /etc/postfix/dynamicmaps.cf || true
 [ -d /etc/postfix/dynamicmaps.cf.d ] && find /etc/postfix/dynamicmaps.cf.d -type d -exec chmod 755 {} + && find /etc/postfix/dynamicmaps.cf.d -type f -exec chmod 644 {} + || true
 
-
 # Настройка директории вложений и прав для postfix-attacher
 [ -d /data/attachments ] || mkdir -p /data/attachments
 chown -R nginx:nginx /data/attachments
 chmod 755 /data/attachments
 [ -f /opt/postfix-attacher/postfix-attacher ] && chmod +x /opt/postfix-attacher/postfix-attacher || true
 
-# Быстрая точечная передача прав на структуры ящиков и индексы Dovecot (без сканирования писем в cur/new)
-[ -d /data/mail ] && find /data/mail -user root -not -path "*/cur/*" -not -path "*/new/*" -exec chown vmail:vmail {} + || true
+# Быстрая точечная передача прав на структуры ящиков и индексы Dovecot (без глубокого сканирования писем в cur/new)
+echo "Проверка прав почтовых ящиков..."
+[ -d /data/mail ] && find /data/mail -maxdepth 3 -user root -not -path "*/cur/*" -not -path "*/new/*" -exec chown vmail:vmail {} + || true
+echo "Права почтовых ящиков проверены."
 
 echo "Setting done. Welcome."
 echo "Tuning TCP keepalive..."

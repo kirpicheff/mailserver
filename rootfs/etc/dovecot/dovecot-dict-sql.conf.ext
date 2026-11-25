@@ -1,14 +1,34 @@
-connect = host=localhost dbname=postfix user={{ MARIADB_USER }} password={{ MARIADB_PASS }}
+# SQL словарь для квот (quota_clone) в Dovecot 2.4
 
-map {
-  pattern = priv/quota/storage
-  table = quota2
-  username_field = username
-  value_field = bytes
+dict_server {
+  dict mysql {
+    sql_driver = mysql
+    mysql localhost {
+      dbname = postfix
+      user = {{ MARIADB_USER }}
+      password = {{ MARIADB_PASS }}
+    }
+
+    dict_map priv/quota/storage {
+      sql_table = quota2
+      username_field = username
+      value_field bytes {
+        type = uint
+      }
+    }
+
+    dict_map priv/quota/messages {
+      sql_table = quota2
+      username_field = username
+      value_field messages {
+        type = uint
+      }
+    }
+  }
 }
-map {
-  pattern = priv/quota/messages
-  table = quota2
-  username_field = username
-  value_field = messages
+
+quota_clone {
+  dict proxy {
+    name = mysql
+  }
 }

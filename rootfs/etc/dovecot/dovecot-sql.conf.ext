@@ -1,41 +1,37 @@
-connect = host=localhost dbname=postfix user={{ MARIADB_USER }} password={{ MARIADB_PASS }}
-driver = mysql
+# SQL аутентификация и выборка пользователей для Dovecot 2.4
 
-# Default password scheme.
-# depends on your $CONF['encrypt'] setting:
-# md5crypt  -> MD5-CRYPT
-# md5       -> PLAIN-MD5
-# cleartext -> PLAIN
-default_pass_scheme = MD5-CRYPT
+sql_driver = mysql
 
-# Query to retrieve password. user can be used to retrieve username in other
-# formats also.
+mysql localhost {
+  dbname = postfix
+  user = {{ MARIADB_USER }}
+  password = {{ MARIADB_PASS }}
+}
 
-#password_query = SELECT username AS user,password FROM mailbox WHERE username = '%u' AND active='1'
+auth_allow_weak_schemes = yes
 
-iterate_query = SELECT username as user FROM mailbox
+passdb sql {
+  default_password_scheme = MD5-CRYPT
+  query = \
+    SELECT username AS user, \
+      CASE \
+        WHEN password LIKE '$6$%' THEN CONCAT('{SHA512-CRYPT}', password) \
+        WHEN password LIKE '$1$%' THEN CONCAT('{MD5-CRYPT}', password) \
+        ELSE password \
+      END AS password, \
+      '/data/mail/%{user | domain}/%{user | username}' AS userdb_home, \
+      '/data/mail/%{user | domain}/%{user | username}' AS userdb_mail_path, \
+      1000 AS userdb_uid, \
+      1000 AS userdb_gid \
+    FROM mailbox WHERE username = '%{user}' AND active = '1'
+}
 
-password_query = \
-SELECT username as user, \
-  CASE \
-    WHEN password LIKE '$6$%%' THEN CONCAT('{SHA512-CRYPT}', password) \
-    WHEN password LIKE '$1$%%' THEN CONCAT('{MD5-CRYPT}', password) \
-    ELSE password \
-  END AS password, \
-  '/data/mail/%d/%n' as userdb_home, \
-  'maildir:/data/mail/%d/%n' as userdb_mail, \
-  1000 as userdb_uid, \
-  1000 as userdb_gid \
-  FROM mailbox WHERE username = '%u' AND active = '1'
-
-
-
-# Query to retrieve user information.
-
-# user_query = SELECT maildir, 1000 AS uid, 1000 AS gid FROM mailbox WHERE username = '%u' AND active='1'
-
-user_query = \
-SELECT '/data/mail/%d/%n' as home, \
-'maildir:/data/mail/%d/%n' as mail, \
-1000 AS uid, 1000 AS gid, concat('*:bytes=', quota) AS quota_rule \
-FROM mailbox WHERE username = '%u' AND active = '1'
+userdb sql {
+  iterate_query = SELECT username AS user FROM mailbox
+  query = \
+    SELECT '/data/mail/%{user | domain}/%{user | username}' AS home, \
+      '/data/mail/%{user | domain}/%{user | username}' AS mail_path, \
+      1000 AS uid, 1000 AS gid, \
+      CONCAT(quota, 'B') AS quota_storage_size \
+    FROM mailbox WHERE username = '%{user}' AND active = '1'
+}
