@@ -25,8 +25,6 @@ if [ -z ${SETUP_PASSWORD} ]; then export SETUP_PASSWORD=admin; fi
 if [ -z  ${MARIADB_USER} ]; then export MARIADB_USER=root; fi
 if [ -z ${MARIADB_PASS} ]; then export MARIADB_PASS=root; fi
 if [ -z ${MESSAGE_SIZE} ]; then export MESSAGE_SIZE=52428800; fi
-if [ -z ${UPLOAD_SIZE} ]; then export UPLOAD_SIZE=1000M; fi
-if [ -z ${POST_SIZE} ]; then export POST_SIZE=1000M; fi
 if [ -z ${RSPAMD_PASSWORD} ]; then export RSPAMD_PASSWORD='PassWord'; fi
 if [ -z ${JWT_SECRET} ]; then export JWT_SECRET=$(tr -dc 'A-Za-z0-9' < /dev/urandom | head -c 32); fi
 
@@ -301,10 +299,10 @@ settpl /etc/postfix/sql/mysql_virtual_mailbox_limit_maps.cf
 settpl /etc/postfix/sql/mysql_virtual_mailbox_maps.cf
 # Генерация конфига для MailAdmin
 settpl /opt/mailadmin/.env
+grep -q '^MAIL_SERVER=' /opt/mailadmin/.env || printf '\nMAIL_SERVER=%s\n' "${MAIL_SERVER}" >> /opt/mailadmin/.env
 settpl /etc/nginx/conf.d/0-autoconfig.conf
 settpl /etc/nginx/conf.d/2-postfixadmin.conf
 settpl /etc/nginx/conf.d/5-webmail.conf
-settpl /var/www/autoconfig/autoconfig.settings.php
 echo "Конфигурационные файлы сгенерированы."
 
 # Пароль RSPAMD
@@ -317,7 +315,7 @@ rm -rf /tmp/1.txt
 sed -i "s|<PASSWORD>|${PASSWORD}|g" /etc/rspamd/local.d/worker-controller.inc
 echo "Пароль Rspamd настроен."
 
-echo "Настройка параметров Postfix, Dovecot и PHP..."
+echo "Настройка параметров Postfix и Dovecot..."
 postconf -e "smtpd_tls_cert_file = /data/cert/live/${MAIL_SERVER}/fullchain.pem"
 postconf -e "smtpd_tls_key_file = /data/cert/live/${MAIL_SERVER}/privkey.pem"
 postconf -e "smtpd_tls_CAfile = /data/cert/live/${MAIL_SERVER}/chain.pem"
@@ -330,27 +328,6 @@ newaliases
 
 [ -d /etc/dovecot/sieve-filter ] || mkdir /etc/dovecot/sieve-filter
 
-sed -i "s/^upload_max_filesize =.*/upload_max_filesize = ${UPLOAD_SIZE}/" /etc/php83/php.ini
-sed -i "s/^post_max_size =.*/post_max_size = ${POST_SIZE}/" /etc/php83/php.ini
-sed -i "s/^memory_limit =.*/memory_limit = 256M/" /etc/php83/php.ini
-sed -i "s/^;*max_execution_time =.*/max_execution_time = 600/" /etc/php83/php.ini
-sed -i "s/^;*max_input_time =.*/max_input_time = 600/" /etc/php83/php.ini
-sed -i "s/^;*default_socket_timeout =.*/default_socket_timeout = 300/" /etc/php83/php.ini
-
-sed -i "s/date.timezone =/date.timezone = Europe\/Moscow/" /etc/php83/php.ini
-sed -i "s/^short_open_tag = .*/short_open_tag = On/g" /etc/php83/php.ini
-sed -i "s/^;*session.upload_progress.enabled =.*/session.upload_progress.enabled = Off/" /etc/php83/php.ini
-sed -i "s/^user = .*/user = nginx/g" /etc/php83/php-fpm.d/www.conf
-sed -i "s/^group = .*/group = nginx/g" /etc/php83/php-fpm.d/www.conf
-sed -i "s/listen =.*/listen = \/var\/run\/php83-fpm\.sock/" /etc/php83/php-fpm.d/www.conf 
-sed -i "s/\;listen.owner =.*/listen.owner = nginx/" /etc/php83/php-fpm.d/www.conf
-sed -i "s/\;listen.group =.*/listen.group = nginx/" /etc/php83/php-fpm.d/www.conf
-sed -i "s/pm.max_children =.*/pm.max_children = 15/"  /etc/php83/php-fpm.d/www.conf
-sed -i "s/pm.min_spare_servers =.*/pm.min_spare_servers = 3/"  /etc/php83/php-fpm.d/www.conf
-sed -i "s/pm.max_spare_servers =.*/pm.max_spare_servers = 5/"  /etc/php83/php-fpm.d/www.conf
-sed -i "s/pm.start_servers =.*/pm.start_servers = 5/"  /etc/php83/php-fpm.d/www.conf
-sed -i "s/\;pm.max_requests =.*/pm.max_requests = 200/"  /etc/php83/php-fpm.d/www.conf
-
 # Настройка cron (используем > для первой строки, чтобы не плодить дубли при перезапусках)
 echo "PATH=/usr/sbin:/usr/bin:/sbin:/bin"  > /etc/crontabs/root
 echo 'MAILTO=""' >>  /etc/crontabs/root
@@ -359,24 +336,11 @@ echo "30 0 */7 * * /usr/bin/find /data/mail/*/*/.Junk/ -type f -mtime +30 -exec 
 echo "*/30 * * * * /usr/sbin/logrotate /etc/logrotate.conf -s /tmp/logrotate.status > /dev/null 2>&1" >> /etc/crontabs/root
 echo "#END" >> /etc/crontabs/root
 
-sed -i "s/define('TIMEZONE', .*;/define('TIMEZONE', 'Europe\/Moscow');/" /var/www/z-push/config.php
-sed -i "s#define('BACKEND_PROVIDER', .*#define('BACKEND_PROVIDER', 'BackendIMAP');#" /var/www/z-push/config.php
-sed -i "s#define('LOGLEVEL', .*#define('LOGLEVEL', LOGLEVEL_OFF);#" /var/www/z-push/config.php
-sed -i "s#define('IMAP_SERVER', .*#define('IMAP_SERVER', 'localhost');#" /var/www/z-push/backend/imap/config.php
-sed -i "s#define('IMAP_PORT', .*#define('IMAP_PORT', 993);#" /var/www/z-push/backend/imap/config.php
-sed -i "s#define('IMAP_OPTIONS', .*#define('IMAP_OPTIONS', '/ssl/novalidate-cert');#" /var/www/z-push/backend/imap/config.php
-sed -i "s#define('IMAP_DEFAULTFROM', .*#define('IMAP_DEFAULTFROM', '');#" /var/www/z-push/backend/imap/config.php
-sed -i "s#define('IMAP_FOLDER_CONFIGURED', .*#define('IMAP_FOLDER_CONFIGURED', true);#" /var/www/z-push/backend/imap/config.php
-
 sed -i '/.mysqld.$/a expire_logs_days=30'  /etc/my.cnf.d/mariadb-server.cnf
 sed -i '/.mysqld.$/a max_connections=1000'  /etc/my.cnf.d/mariadb-server.cnf
 sed -i '/.mysqld.$/a bind-address = 127.0.0.1'  /etc/my.cnf.d/mariadb-server.cnf
 sed -i '/.mysqld.$/a port = 3306'  /etc/my.cnf.d/mariadb-server.cnf
 sed -i "s/skip-networking/#skip-networking/"  /etc/my.cnf.d/mariadb-server.cnf
-
-mkdir -p /var/lib/php83/sessions
-chown -R nginx:nginx /var/lib/php83/sessions
-chmod 777 /var/lib/php83/sessions
 
 # Настройка персистентности и плагинов WallMail
 echo "Настройка плагинов WallMail..."

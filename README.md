@@ -10,7 +10,6 @@ Comprehensive, lightweight, and high-performance mail server based on **Alpine L
 
 *   **Full Stack**: Postfix, Dovecot, MariaDB, Rspamd, and Nginx.
 *   **Webmail**: Built-in **WallMail** (Go + Vue 3).
-*   **ActiveSync**: **Z-Push** support for mobile synchronization.
 *   **Security**: Integrated **Fail2ban**, **OpenDKIM**, and **Rspamd** for spam filtering.
 *   **Admin Panel**: Custom [MailAdmin](https://github.com/kirpicheff/mailadmin) UI for easy domain and mailbox management.
 *   **Large Attachment Linker**: Postfix milter for automatically converting large email attachments (>25MB) into HTTPS download links.
@@ -86,7 +85,6 @@ For your mail server to work correctly and not end up in spam, you MUST configur
 | `MARIADB_USER` | Database user for mail services | `postfix` |
 | `MARIADB_PASS` | Database password | `password` |
 | `MESSAGE_SIZE` | Max email size (bytes) | `52428800` |
-| `UPLOAD_SIZE` | PHP Upload Max Filesize | `25M` |
 
 ## 📁 Persistence
 
