@@ -4,7 +4,7 @@
 ![Platform](https://img.shields.io/badge/platform-linux/amd64-blue)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
-Comprehensive, lightweight, and high-performance mail server based on **Alpine Linux 3.19**. Designed for speed, security, and ease of management.
+Comprehensive, lightweight, and high-performance mail server based on **Alpine Linux 3.24**. Designed for speed, security, and ease of management.
 
 ## 🚀 Key Features
 
@@ -48,7 +48,6 @@ docker run -d \
     -v /opt/mailserver/certs:/etc/letsencrypt \
     -e MARIADB_USER=postfix \
     -e MARIADB_PASS=password \
-    -e SETUP_PASSWORD=admin \
     -e MAIN_DOMAIN=example.com \
     -e MAIL_SERVER=mail.example.com \
     -p 25:25 -p 80:80 -p 443:443 -p 465:465 -p 587:587 -p 993:993 -p 4190:4190 -p 9999:9999 \
@@ -86,7 +85,6 @@ For your mail server to work correctly and not end up in spam, you MUST configur
 | `MAIL_SERVER` | FQDN of the mail server | `mail.example.com` |
 | `MARIADB_USER` | Database user for mail services | `postfix` |
 | `MARIADB_PASS` | Database password | `password` |
-| `SETUP_PASSWORD` | Password for the MailAdmin panel | `admin` |
 | `MESSAGE_SIZE` | Max email size (bytes) | `52428800` |
 | `UPLOAD_SIZE` | PHP Upload Max Filesize | `25M` |
 
