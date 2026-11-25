@@ -105,6 +105,14 @@ com
 dll
 scr
 lnk
+bat
+cmd
+vbs
+vbe
+ps1
+hta
+iso
+img
 
 EOF
 
